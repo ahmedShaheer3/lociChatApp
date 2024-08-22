@@ -34,6 +34,7 @@ export interface chatRoomType {
   isGroupChat: boolean;
   lastMessage: string;
   roomName: string;
+  roomPrivacy: "PUBLIC" | "PRIVATE";
   profileImage?: string;
   createdAt?: Date;
   updatedAt?: Date;

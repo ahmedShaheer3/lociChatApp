@@ -3,7 +3,7 @@ import express from "express";
 // import { checkSchemaError } from "../middleware/validations";
 // import { createUserSchema, updateUserFcmSchema, updateUserSchema } from "../middleware/schemas/requestSchemas";
 // import { apiAuthorizer, updateApiAuthorizer } from "../middleware/authorization";
-import { createMessage } from "../controllers/chatController";
+import { createMessage } from "../controllers/chatRoomController";
 
 // DEFINE EXPRESS ROUTE
 const router = express.Router();
