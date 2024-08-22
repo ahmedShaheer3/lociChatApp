@@ -5,9 +5,6 @@ import { CognitoAccessTokenPayload } from "aws-jwt-verify/jwt-model";
 import { CLIENT_ID, FCM_SERVER_KEY, FCM_URL, USER_POOL_ID } from "../config";
 
 export class CommonUtils {
-  constructor() {
-    console.debug("common utils constructor called");
-  }
   /*
    **Get unique array - remove duplicates
    */
@@ -87,8 +84,6 @@ export class CommonUtils {
 
 export class AppUtils extends CommonUtils {
   constructor() {
-    console.debug("app utils construtor called");
-
     super();
   }
   /*

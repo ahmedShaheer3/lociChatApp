@@ -3,10 +3,8 @@ import { UserType } from "../types/entityTypes";
 import { Posts } from "./post.model";
 import { Notifications } from "./notification.model";
 import { Connections } from "./connection.models";
-import { BUCKET_NAME } from "../config";
 import { SavedPosts } from "./savedPosts.model";
 import { Reports } from "./report.model";
-import { appUtils } from "../utils";
 
 /*
  ** Social token schema for user database used for when user is social signup
@@ -129,9 +127,6 @@ export const deleteUserById = async (userId: string) => {
   await Reports.deleteMany({ reporterId: userId });
   // deleting user all reports as reported
   await Reports.deleteMany({ reportedId: userId });
-
-  // deleting user media files
-  await appUtils.deleteUserStorage(BUCKET_NAME, userId);
 
   // deleting user
   // UPDATE USER RECORD IN DB

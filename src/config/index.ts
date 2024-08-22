@@ -5,7 +5,6 @@ const DATABASE_USER = "shaheerahmed";
 const DATABASE_PASSWORD = "Admin1234";
 export const USER_POOL_ID = "us-east-1_xkg9tK19V";
 export const CLIENT_ID = "2t2p949cr3h1mfgju93nt552pv";
-export const BUCKET_NAME = "loci-storage-bucket-dev";
 
 export const DATABASE_URL = `mongodb+srv://${DATABASE_USER}:${DATABASE_PASSWORD}@cluster0.mikutli.mongodb.net/loci-dev?retryWrites=true&w=majority&appName=Cluster0`;
 
