@@ -21,8 +21,8 @@ const chatMessageSchema = new Schema(
     },
     messageType: {
       type: String,
-      enum: ["TEXT", "MEDIA"],
-      default: "txt",
+      enum: ["TEXT", "IMAGE", "VIDEO", "VOICE", "FILE"],
+      default: "TEXT",
     },
   },
   {

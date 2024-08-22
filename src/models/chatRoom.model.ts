@@ -15,17 +15,17 @@ const chatRoomSchema = new Schema(
       ref: "ChatMessage",
     },
     createdBy: { type: Schema.Types.ObjectId, ref: "Users" },
-    members: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Users",
-        unique: true,
-      },
-    ],
-    admin: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+    members: {
+      type: [Schema.Types.ObjectId],
+      ref: "Users",
+      unique: true,
     },
+    admins: {
+      type: [Schema.Types.ObjectId],
+      ref: "Users",
+      unique: true,
+    },
+
     profileImage: {
       type: String,
       default: null,
