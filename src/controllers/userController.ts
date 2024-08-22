@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { deleteUserById, Users } from "../models/user.models";
+import { Users } from "../models/user.models";
 import { creatUserType } from "../types/incomingDataType";
 import logger from "../utils/logger";
 import { STATUS_CODE } from "../config";
@@ -71,31 +71,7 @@ export const updateUser = async (req: Request & { params: { userId: string } }, 
     return formatedError(res, error);
   }
 };
-/*
- ** delete user in database
- */
-export const deleteUser = async (req: Request & { params: { userId: string } }, res: Response) => {
-  const userId = req.params.userId;
-  console.log("🚀 ~ updatingData ~ userId:", userId);
 
-  try {
-    // validation user
-    const userData = await Users.findOne({ _id: userId });
-    if (!userData) {
-      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "user with id not found" });
-    }
-    // deleting user
-    await deleteUserById(userId);
-
-    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: "Successfully deleted" });
-  } catch (error: unknown) {
-    console.log("🚀 ~ deleteUser ~ error:", error);
-    /*
-     ** Formated Error
-     */
-    return formatedError(res, error);
-  }
-};
 /*
  ** Get  user data by id
  */

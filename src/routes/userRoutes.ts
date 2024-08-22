@@ -1,7 +1,6 @@
 import express from "express";
 import {
   createUser,
-  deleteUser,
   getUser,
   getAllUsers,
   updateUser,
@@ -25,6 +24,5 @@ router.route("/block/:userId").post(apiAuthorizer, toggleBlockUser);
 router.route("/block/:userId").get(apiAuthorizer, getBlockedUsers);
 router.route("/:userId").patch(updateApiAuthorizer, updateUserSchema, checkSchemaError, updateUser);
 router.route("/fcm/:userId").patch(apiAuthorizer, updateUserFcmSchema, checkSchemaError, updateUserFcm);
-router.route("/:userId").delete(apiAuthorizer, deleteUser);
 
 export default router;

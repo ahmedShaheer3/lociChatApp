@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { Inbox } from "../models/inboxModel";
-import { Message, deleteMessageById } from "../models/messageModel";
 import chatAggregations from "../aggregations/chatAggrgations";
 import logger from "../utils/logger";
+import { ChatRoom } from "../models/chatRoom.model";
+import { ChatMessage } from "../models/chatMessage.model";
 // import { getUserDataById } from "../models/user.models";
 
 // GET ALL CHATS IN INBOX
@@ -15,7 +15,7 @@ const getUserInbox = async (req: Request, res: Response) => {
     const getUserInboxPipeline = chatAggregations.getUserInbox(userId as string);
 
     // CALL AGGREGATION METHOD ON INBOX TABLE
-    const chats = await Inbox.aggregate(getUserInboxPipeline);
+    const chats = await ChatRoom.aggregate(getUserInboxPipeline);
 
     return res.status(200).json({ success: true, data: chats });
   } catch (error) {
@@ -35,7 +35,7 @@ const createMessage = async (req: Request, res: Response) => {
 
     if (!inboxID) {
       // CREATE INBOX IF NOT ALREADY CREATED
-      const inbox = await Inbox.create({
+      const inbox = await ChatRoom.create({
         users: [{ userId: senderId }, { userId: receiverId }],
       });
       inboxID = inbox._id;
@@ -54,7 +54,7 @@ const createMessage = async (req: Request, res: Response) => {
     }
 
     // CREATE MESSAGE IN DB
-    const messageData = await Message.create(messagePayload);
+    const messageData = await ChatMessage.create(messagePayload);
 
     // UPDATE LAST MESSAGE AND UNREAD COUNT OF CONVO IN CHAT
     // const updateInbox = await updateInboxById(inboxID, {lastMessage: message});
@@ -65,7 +65,7 @@ const createMessage = async (req: Request, res: Response) => {
 
     // console.log("🚀 ~ createMessage ~ recievingUserData:", recievingUserData);
 
-    const updateInbox = await Inbox.findOneAndUpdate(
+    const updateInbox = await ChatRoom.findOneAndUpdate(
       { _id: inboxID, "users.userId": receiverId },
       {
         $inc: { "users.$.unreadMsgCount": 1 },
@@ -86,21 +86,21 @@ const createMessage = async (req: Request, res: Response) => {
 };
 
 // DELETE MSG FROM DB
-const deleteMessage = async (req: Request, res: Response) => {
-  const { messageId } = req.body;
+// const deleteMessage = async (req: Request, res: Response) => {
+//   const { messageId } = req.body;
 
-  try {
-    // DELETE MESSAGE FROM DB
-    await deleteMessageById(messageId);
+//   try {
+//     // DELETE MESSAGE FROM DB
+//     await deleteMessageById(messageId);
 
-    return res.status(200).json({ success: true, message: "Message delete successfully." });
-  } catch (error) {
-    // PRINT ERROR LOGS
-    logger.error("error deleting message", error);
+//     return res.status(200).json({ success: true, message: "Message delete successfully." });
+//   } catch (error) {
+//     // PRINT ERROR LOGS
+//     logger.error("error deleting message", error);
 
-    return res.status(400).json({ error: true, message: "Error deleting message" });
-  }
-};
+//     return res.status(400).json({ error: true, message: "Error deleting message" });
+//   }
+// };
 
 // GET ALL MESSAGES OF AN INBOX
 const getMessagesByInbox = async (req: Request, res: Response) => {
@@ -110,13 +110,13 @@ const getMessagesByInbox = async (req: Request, res: Response) => {
 
   try {
     // FIND ALL MESSAGES BELONGING TO INBOX
-    const chats = await Message.find({ inbox: inboxId })
+    const chats = await ChatMessage.find({ inbox: inboxId })
       .sort({ createdAt: -1 })
       .skip(page * rows)
       .limit(rows);
 
     // GET COUNT OF ALL Rooms
-    const totalChats = await Message.countDocuments({ inbox: inboxId });
+    const totalChats = await ChatMessage.countDocuments({ inbox: inboxId });
 
     // RESPONSE PAYLOAD
     const response = {
@@ -142,7 +142,7 @@ const resetUnreadCount = async (req: Request, res: Response) => {
 
   try {
     // UPDATE LAST MESSAGE OF CONVO IN CHAT
-    const updateInbox = await Inbox.findOneAndUpdate(
+    const updateInbox = await ChatRoom.findOneAndUpdate(
       { _id: inboxId, "users.userId": receiverId },
       { $set: { "users.$.unreadMsgCount": 0 } },
       { new: true },
@@ -163,7 +163,7 @@ const getInboxIdByUserIds = async (req: Request, res: Response) => {
 
   try {
     // Find the inbox where both senderId and receiverId match in the users array
-    const updateInbox = await Inbox.findOne({
+    const updateInbox = await ChatRoom.findOne({
       $and: [
         { "users.userId": new mongoose.Types.ObjectId(senderId as string) },
         { "users.userId": new mongoose.Types.ObjectId(receiverId as string) },
@@ -179,4 +179,4 @@ const getInboxIdByUserIds = async (req: Request, res: Response) => {
   }
 };
 
-export { createMessage, deleteMessage, getInboxIdByUserIds, getMessagesByInbox, getUserInbox, resetUnreadCount };
+export { createMessage, getInboxIdByUserIds, getMessagesByInbox, getUserInbox, resetUnreadCount };

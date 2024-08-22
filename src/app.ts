@@ -2,12 +2,7 @@ import express, { Express, Request, Response, json, urlencoded } from "express";
 import cors from "cors";
 
 import userApis from "./routes/userRoutes";
-import connectionApis from "./routes/connectionRoutes";
-import postApis from "./routes/postRoutes";
-import notificationApis from "./routes/notificationRoutes";
-import reactionApis from "./routes/reactionRoute";
-import commentApis from "./routes/commentRoutes";
-import reportApis from "./routes/reportRoutes";
+import chatApis from "./routes/chatRoutes";
 
 import logger from "./utils/logger";
 import morgan from "morgan";
@@ -46,12 +41,7 @@ app.get("/", (req: Request, res: Response) => {
  *
  */
 app.use("/api/v1/user", userApis);
-app.use("/api/v1/connection", connectionApis);
-app.use("/api/v1/post", postApis);
-app.use("/api/v1/notification", notificationApis);
-app.use("/api/v1/reaction", reactionApis);
-app.use("/api/v1/comment", commentApis);
-app.use("/api/v1/report", reportApis);
+app.use("/api/v1/chat", chatApis);
 
 // middleware to return response of URL NOT FOUND
 app.use((req: Request, res: Response) => {

@@ -16,7 +16,7 @@ const chatAggregations = {
           $cond: {
             if: { $eq: ["$users.userId", new mongoose.Types.ObjectId(userId as string)] },
             then: "$users.unreadMsgCount",
-            else: null, // or any default value you want
+            else: null,
           },
         },
       },

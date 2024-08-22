@@ -1,10 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 import { UserType } from "../types/entityTypes";
-import { Posts } from "./post.model";
-import { Notifications } from "./notification.model";
-import { Connections } from "./connection.models";
-import { SavedPosts } from "./savedPosts.model";
-import { Reports } from "./report.model";
 
 /*
  ** Social token schema for user database used for when user is social signup
@@ -113,36 +108,3 @@ const userSchema = new Schema<UserType>(
 );
 
 export const Users = mongoose.model("Users", userSchema);
-
-export const deleteUserById = async (userId: string) => {
-  // deleteing all post
-  await Posts.deleteMany({ authorId: userId });
-  // deleting user saved post
-  await SavedPosts.deleteMany({ userId });
-  // deleting user all notifications
-  await Notifications.deleteMany({ userId });
-  // deleteing user all pending connections
-  await Connections.deleteMany({ followingId: userId, connectionStatus: "PENDING" });
-  // deleting user all reports
-  await Reports.deleteMany({ reporterId: userId });
-  // deleting user all reports as reported
-  await Reports.deleteMany({ reportedId: userId });
-
-  // deleting user
-  // UPDATE USER RECORD IN DB
-  await Users.findByIdAndUpdate(
-    userId,
-    {
-      email: "",
-      profileDescription: "",
-      profileImage: "",
-      name: "Deleted user",
-      nickName: "Deleted user",
-      accountStatus: "DELETED",
-      fcmTokens: [],
-      socialTokens: [],
-      blockedUsers: [],
-    },
-    { new: true },
-  );
-};
