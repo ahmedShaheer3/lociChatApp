@@ -22,4 +22,23 @@ A feature-rich chat application built with Node.js, MongoDB, and Socket.IO. This
 
    ```bash
    git clone https://github.com/yourusername/your-repo-name.git
+   cd your-repo-name
+   npm install
+
+   ```
+
+2. Running the Application:
+
+   ```bash
+   npm run dev
+   npm run prod
+
+   ```
+
+3. Linting and Formatting:
+
+   ```bash
+   npm run lint
+   npm run lint-fix
+   npm run format
    ```
