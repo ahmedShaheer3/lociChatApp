@@ -2,12 +2,9 @@ import { Request, Response } from "express";
 import { deleteUserById, Users } from "../models/user.models";
 import { creatUserType } from "../types/incomingDataType";
 import logger from "../utils/logger";
-import { BUCKET_NAME, STATUS_CODE } from "../config";
+import { STATUS_CODE } from "../config";
 import { formatedError } from "../utils/formatedError";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const s3Storage = new S3Client({});
 /*
  ** Creating user in database
  */
@@ -236,43 +233,6 @@ export const getBlockedUsers = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: userData });
   } catch (error: unknown) {
     console.log("🚀 ~ getBlockedUsers ~ error:", error);
-    /*
-     ** Formated Error
-     */
-    return formatedError(res, error);
-  }
-};
-/*
- ** get signed url for image upload
- */
-export const uploadSignedUrl = async (req: Request, res: Response) => {
-  // Assume the client sends the file name and type
-  try {
-    const { fileName, fileType, folderName } = req.body;
-    const userId = req.params.userId;
-
-    const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
-      ContentType: fileType,
-      Key: `${userId}/${folderName}/${fileName}`,
-    });
-
-    console.log("command:", command);
-    // getting  signed url
-    const url = await getSignedUrl(s3Storage, command, { expiresIn: 15 * 60 });
-    // construction get url
-    const linkUrl = `https://${BUCKET_NAME}.s3.amazonaws.com/${userId}/${folderName}/${fileName}`;
-    console.log("urls:", url);
-
-    return res.status(STATUS_CODE.SUCCESS).json({
-      success: true,
-      data: {
-        putUrl: url,
-        getUrl: linkUrl,
-      },
-    });
-  } catch (error: unknown) {
-    console.log("🚀 ~ getUserData ~ error:", error);
     /*
      ** Formated Error
      */

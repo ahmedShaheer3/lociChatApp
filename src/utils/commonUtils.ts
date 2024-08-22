@@ -3,9 +3,7 @@ import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { JwtExpiredError } from "aws-jwt-verify/error";
 import { CognitoAccessTokenPayload } from "aws-jwt-verify/jwt-model";
 import { CLIENT_ID, FCM_SERVER_KEY, FCM_URL, USER_POOL_ID } from "../config";
-import { DeleteObjectsCommand, ListObjectsV2Command, ListObjectsV2CommandOutput, S3Client } from "@aws-sdk/client-s3";
 
-const s3Storage = new S3Client({});
 export class CommonUtils {
   constructor() {
     console.debug("common utils constructor called");
@@ -119,33 +117,6 @@ export class AppUtils extends CommonUtils {
       } else {
         throw new Error("Token validation failed");
       }
-    }
-  };
-  /*
-   **
-   * Deleteing whole folder in s3 bucket
-   */
-  deleteUserStorage = async (bucket: string, prefix: string) => {
-    let listResponse: ListObjectsV2CommandOutput | undefined;
-    try {
-      do {
-        listResponse = await s3Storage.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix }));
-        console.log("🚀 ~ emptyBucketByPrefix ~ listResponse:", listResponse);
-        if (!listResponse.Contents?.length) {
-          break;
-        }
-        const objects = listResponse.Contents.map(({ Key }) => ({ Key }));
-        const command = new DeleteObjectsCommand({
-          Bucket: bucket,
-          Delete: {
-            Objects: objects,
-          },
-        });
-        await s3Storage.send(command);
-      } while (listResponse.IsTruncated);
-    } catch (error) {
-      console.log("🚀 ~ AppUtils ~ deleteUserStorage ~ error:", error);
-      throw new Error("Unable to delete user storage");
     }
   };
 

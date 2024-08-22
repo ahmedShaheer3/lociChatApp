@@ -1,16 +1,12 @@
-import mongoose, { CallbackError, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { postType } from "../types/entityTypes";
 import { Users } from "./user.models";
 import { Comments } from "./comments.model";
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { Reactions } from "./reaction.model";
 import { SavedPosts } from "./savedPosts.model";
 import { Reports } from "./report.model";
 import { Notifications } from "./notification.model";
 import { Connections } from "./connection.models";
-import { BUCKET_NAME } from "../config";
-
-const s3Storage = new S3Client({});
 
 const sharedSchema = new Schema({
   userId: {
@@ -147,7 +143,7 @@ postSchema.post("save", async function () {
     // saving notification to database
     await Notifications.insertMany(notificationBulkData);
     console.log("🚀 ~ notificationBulkData ~ notificationBulkData:", notificationBulkData);
-  } catch (error: CallbackError | unknown) {
+  } catch (error: unknown) {
     console.log("🚀 ~ error:", error);
   }
 });
@@ -164,14 +160,6 @@ export const deletePostById = async (userId: string, postId: string) => {
   await Reactions.deleteMany({ postId });
   // deleting post reports
   await Reports.deleteMany({ postId });
-
-  // deleting  media
-  const command = new DeleteObjectCommand({
-    Bucket: BUCKET_NAME,
-    Key: `${userId}/${postId}`,
-  });
-
-  await s3Storage.send(command);
 
   await Posts.findByIdAndDelete(postId);
 
