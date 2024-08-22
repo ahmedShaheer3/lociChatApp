@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
 import chatAggregations from "../aggregations/chatAggrgations";
 import logger from "../utils/logger";
-import { ChatRoom } from "../models/chatRoom.model";
-import { ChatMessage } from "../models/chatMessage.model";
+import { ChatRoom, deleteChatRoomById } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
@@ -200,116 +199,6 @@ const changingGroupName = async (req: Request, res: Response) => {
     return formatedError(res, error);
   }
 };
-
-// // CREATE MESSAGE IN DB
-// const createMessage = async (req: Request, res: Response) => {
-//   const { senderId, receiverId, message, messageType, inboxId, media } = req.body;
-
-//   try {
-//     let inboxID = inboxId;
-
-//     if (!inboxID) {
-//       // CREATE INBOX IF NOT ALREADY CREATED
-//       const inbox = await ChatRoom.create({
-//         members: [{ userId: senderId }, { userId: receiverId }],
-//       });
-//       inboxID = inbox._id;
-//     }
-
-//     const messagePayload = {
-//       inboxId: inboxID,
-//       message,
-//       messageType,
-//       media,
-//       sender: senderId,
-//     };
-
-//     if (messageType === "txt") {
-//       delete messagePayload.media;
-//     }
-
-//     // CREATE MESSAGE IN DB
-//     const messageData = await ChatMessage.create(messagePayload);
-
-//     // UPDATE LAST MESSAGE AND UNREAD COUNT OF CONVO IN CHAT
-//     // const updateInbox = await updateInboxById(inboxID, {lastMessage: message});
-//     // const recievingUserData = await getUserDataById(receiverId);
-
-//     // CALL FUNCTION WITH USER FCM
-//     // sendNotificationToUser({arrayOfFcm: recievingUserData.fcmTokens,inboxId:inboxID,message:message})
-
-//     // console.log("🚀 ~ createMessage ~ recievingUserData:", recievingUserData);
-
-//     const updateInbox = await ChatRoom.findOneAndUpdate(
-//       { _id: inboxID, "users.userId": receiverId },
-//       {
-//         $inc: { "users.$.unreadMsgCount": 1 },
-//         lastMessage: message,
-//         lastMessageTimestamp: messageData.createdAt,
-//       },
-//       { new: true },
-//     );
-//     console.log("🚀 ~ createMessage ~ updateInbox:", updateInbox);
-
-//     return res.status(201).json({ success: true, data: messageData });
-//   } catch (error) {
-//     // PRINT ERROR LOGS
-//     logger.error("Error creating message:", error);
-
-//     return res.status(400).json({ error: true, message: "Error creating message" });
-//   }
-// };
-
-// DELETE MSG FROM DB
-// const deleteMessage = async (req: Request, res: Response) => {
-//   const { messageId } = req.body;
-
-//   try {
-//     // DELETE MESSAGE FROM DB
-//     await deleteMessageById(messageId);
-
-//     return res.status(200).json({ success: true, message: "Message delete successfully." });
-//   } catch (error) {
-//     // PRINT ERROR LOGS
-//     logger.error("error deleting message", error);
-
-//     return res.status(400).json({ error: true, message: "Error deleting message" });
-//   }
-// };
-
-// // GET ALL MESSAGES OF AN INBOX
-// const getMessagesByChat = async (req: Request, res: Response) => {
-//   const { inboxId } = req.query;
-//   const page = parseInt(req.query.page as string) - 1 || 0;
-//   const rows = parseInt(req.query.rows as string) || 5;
-
-//   try {
-//     // FIND ALL MESSAGES BELONGING TO INBOX
-//     const chats = await ChatMessage.find({ inbox: inboxId })
-//       .sort({ createdAt: -1 })
-//       .skip(page * rows)
-//       .limit(rows);
-
-//     // GET COUNT OF ALL Rooms
-//     const totalChats = await ChatMessage.countDocuments({ inbox: inboxId });
-
-//     // RESPONSE PAYLOAD
-//     const response = {
-//       success: true,
-//       total: totalChats,
-//       page: page + 1,
-//       rows,
-//       data: chats,
-//     };
-
-//     return res.status(200).json(response);
-//   } catch (error) {
-//     // PRINT ERROR LOGS
-//     logger.error("Error getting messages by inbox", error);
-
-//     return res.status(400).json({ error: true, message: "Error getting messages" });
-//   }
-// };
 /*
  ** Resting chatRoom unread count
  */
@@ -356,27 +245,205 @@ const getChatByUserIds = async (req: Request, res: Response) => {
   }
 };
 /*
+ ** Getting chat room by chatid
+ */
+const getChatByChatId = async (req: Request, res: Response) => {
+  const chatRoomId = req.params.chatRoomId;
+
+  try {
+    // Find chat room by chat id
+    const chatRoom = await ChatRoom.findById(chatRoomId);
+
+    return res.status(200).json({ success: true, data: chatRoom });
+  } catch (error) {
+    // PRINT ERROR LOGS
+    logger.error("get chat by chat id", error);
+
+    return res.status(400).json({ error: true, message: "Error getting inboxId" });
+  }
+};
+/*
  ** Deleting group chat
  */
+// TODO: Check the deletion flow
 const deleteGroupChat = async (req: Request, res: Response) => {
-  const { chatId, userId } = req.params;
+  const { chatRoomId, userId } = req.params;
   try {
     // validation chat room
-    const chatRoom = await ChatRoom.findOne({ _id: chatId, isGroupChat: true });
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: true });
     if (!chatRoom) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
     }
     // validating if user is room admin or not
-    if (!chatRoom?.admins?.includes(userId)) {
+    if (!chatRoom?.admins?.includes(new mongoose.Types.ObjectId(userId as string))) {
       return res
         .status(STATUS_CODE.NOT_ACCEPTABLE)
         .json({ success: false, message: "only admin are allowed to delete group" });
     }
-    // updating data
-    const updatedRoom = await ChatRoom.findById(chatId, { roomName }, { new: true, runValidators: true });
-    return res.status(STATUS_CODE.CREATED).json({ success: true, message: updatedRoom });
+
+    // deleteing chat room
+    await deleteChatRoomById(chatRoomId);
+    return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
   } catch (error) {
-    console.log("🚀 ~ changingGroupName ~ error:", error);
+    console.log("🚀 ~ deleteGroupChat ~ error:", error);
+    /*
+     ** Formated Error
+     */
+    return formatedError(res, error);
+  }
+};
+/*
+ ** Deleting one to one chat
+ */
+// TODO: Check the deletion flow
+const deleteChatRoom = async (req: Request, res: Response) => {
+  const { chatRoomId, userId } = req.params;
+  try {
+    // validation chat room
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
+    if (!chatRoom) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room not found" });
+    }
+    // validating if user is room admin or not
+    if (!chatRoom?.admins?.includes(new mongoose.Types.ObjectId(userId as string))) {
+      return res
+        .status(STATUS_CODE.NOT_ACCEPTABLE)
+        .json({ success: false, message: "only admin are allowed to delete group" });
+    }
+
+    // deleteing chat room
+    await deleteChatRoomById(chatRoomId);
+    // emit event to other participant with left chat as a payload
+    // emitSocketEvent(
+    //   req,
+    //   otherParticipant._id?.toString(),
+    //   ChatEventEnum.LEAVE_CHAT_EVENT,
+    //   payload
+    // );
+    return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
+  } catch (error) {
+    console.log("🚀 ~ deleteGroupChat ~ error:", error);
+    /*
+     ** Formated Error
+     */
+    return formatedError(res, error);
+  }
+};
+/*
+ ** Leaving from group chat room
+ */
+const leaveGroupChat = async (req: Request, res: Response) => {
+  const { chatRoomId, userId } = req.params;
+  try {
+    // validation chat room
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: true });
+    if (!chatRoom) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
+    }
+    // validating if user is part of this chat room
+    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(userId as string))) {
+      return res
+        .status(STATUS_CODE.NOT_FOUND)
+        .json({ success: false, message: "You are not a part of this group chat" });
+    }
+
+    // leaving the chat group
+    const updatedChat = await ChatRoom.findByIdAndUpdate(
+      chatRoomId,
+      {
+        $pull: {
+          members: userId,
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    console.log("updated chat", updatedChat);
+    return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Left a group successfully" });
+  } catch (error) {
+    console.log("🚀 ~ leaveGroupChat ~ error:", error);
+    /*
+     ** Formated Error
+     */
+    return formatedError(res, error);
+  }
+};
+/*
+ ** Adding new participant to the chat group
+ */
+// TODO:  CHECK REMOVIING FLOW EITHER SINGLE OR ARRAY
+const addNewMembersInGroupChat = async (req: Request, res: Response) => {
+  const { chatRoomId, memberId } = req.body;
+  try {
+    // validation chat room
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: true });
+    if (!chatRoom) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
+    }
+    // validating if user is part of this chat room
+    if (chatRoom?.members?.includes(new mongoose.Types.ObjectId(memberId as string))) {
+      return res
+        .status(STATUS_CODE.NOT_FOUND)
+        .json({ success: false, message: "User is already a member in this group" });
+    }
+
+    // leaving the chat group
+    const updatedChat = await ChatRoom.findByIdAndUpdate(
+      chatRoomId,
+      {
+        $push: {
+          members: memberId,
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    console.log("updated chat", updatedChat);
+    return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Left a group successfully" });
+  } catch (error) {
+    console.log("🚀 ~ leaveGroupChat ~ error:", error);
+    /*
+     ** Formated Error
+     */
+    return formatedError(res, error);
+  }
+};
+/*
+ ** Adding new participant to the chat group
+ */
+const removeMembersInGroupChat = async (req: Request, res: Response) => {
+  const { chatRoomId, memberId, adminId } = req.body;
+  try {
+    // validation chat room
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: true });
+    if (!chatRoom) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
+    }
+    // validating if user is part of this chat room
+    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(memberId as string))) {
+      return res
+        .status(STATUS_CODE.NOT_FOUND)
+        .json({ success: false, message: "You are not a part of this group chat" });
+    }
+    // validate if adminId is belong to admin
+    if (!chatRoom.admins?.includes(new mongoose.Types.ObjectId(adminId))) {
+      return res
+        .status(STATUS_CODE.NOT_ACCEPTABLE)
+        .json({ success: false, message: "You are not an admin in this group" });
+    }
+
+    // leaving the chat group
+    const updatedChat = await ChatRoom.findByIdAndUpdate(
+      chatRoomId,
+      {
+        $pull: {
+          members: memberId,
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    console.log("updated chat", updatedChat);
+    return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Participant removed successfully" });
+  } catch (error) {
+    console.log("🚀 ~ leaveGroupChat ~ error:", error);
     /*
      ** Formated Error
      */
@@ -392,4 +459,9 @@ export {
   createChatRoom,
   changingGroupName,
   deleteGroupChat,
+  leaveGroupChat,
+  deleteChatRoom,
+  getChatByChatId,
+  addNewMembersInGroupChat,
+  removeMembersInGroupChat,
 };

@@ -7,7 +7,7 @@ import {
   toggleBlockUser,
   getBlockedUsers,
   updateUserFcm,
-} from "../controllers/userController";
+} from "../controllers/user.controller";
 import { checkSchemaError } from "../middleware/validations";
 import { createUserSchema, updateUserFcmSchema, updateUserSchema } from "../middleware/schemas/requestSchemas";
 import { apiAuthorizer, updateApiAuthorizer } from "../middleware/authorization";

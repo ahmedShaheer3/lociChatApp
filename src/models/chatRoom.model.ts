@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { chatRoomType } from "../types/entityTypes";
+import { ChatMessage } from "./chatMessage.model";
 // import { Users } from "./user.models";
 
 const chatRoomSchema = new Schema<chatRoomType>(
@@ -69,5 +70,13 @@ const chatRoomSchema = new Schema<chatRoomType>(
 //     next(error as CallbackError);
 //   }
 // });
+
+export const deleteChatRoomById = async (chatRoomId: string) => {
+  // deleteing all post
+  await ChatMessage.deleteMany({ chatRoom: chatRoomId });
+
+  // deleting chat room
+  await ChatRoom.findByIdAndDelete(chatRoomId);
+};
 
 export const ChatRoom = mongoose.model("ChatRoom", chatRoomSchema);
