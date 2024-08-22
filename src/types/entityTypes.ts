@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { connectionStatusType, FcmTokenType, interactionStatusType, socialType } from "./appTypes";
+import { FcmTokenType, socialType } from "./appTypes";
 
 export interface UserType {
   readonly _id?: string;
@@ -26,95 +26,26 @@ export interface UserType {
   blockedUsers: Types.ObjectId[];
 }
 
-export interface connectionType {
+export interface chatRoomType {
   readonly _id?: string;
-  readonly followingId: Types.ObjectId;
-  readonly followerId: Types.ObjectId;
-  connectionStatus: connectionStatusType;
-  isDeleted: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-export interface notificationType {
-  readonly _id?: string;
-  readonly userId: Types.ObjectId;
-  readonly referenceId: Types.ObjectId;
-  notificationTitle: string;
-  notificationBody: string;
-  notificationType:
-    | "COMMENT_LIKE"
-    | "POST_COMMENT"
-    | "NEW_POST"
-    | "FOLLOW_REQUEST"
-    | "POST_REACTION"
-    | "REQUEST_ACCEPTED";
+  readonly createdBy: Types.ObjectId;
+  admins: Types.ObjectId[];
+  members: Types.ObjectId[];
+  isGroupChat: boolean;
+  lastMessage: string;
+  roomName: string;
+  profileImage?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface postType {
+export interface chatMessageType {
   readonly _id?: string;
-  authorId: Types.ObjectId;
-  description?: string;
-  commentCount: number;
-  likesCount: number;
-  isArchived: boolean;
-  privacyStatus: "PUBLIC" | "PRIVATE" | "FRIENDS";
-  views: Types.ObjectId[];
-  taggedUsers: Types.ObjectId[];
-  shared?: { userId: Types.ObjectId; postId: Types.ObjectId };
-  media: { url: string; type: string };
-  location: { type: string; coordinates: number[] };
-  reactionCount: {
-    LIKE: number;
-    PRAY: number;
-    STRONG: number;
-    THANK_YOU: number;
-    APPLAUSE: number;
-  };
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface savedPostType {
-  userId: Types.ObjectId;
-  postId: Types.ObjectId;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface reactionType {
-  readonly _id?: string;
-  postId: Types.ObjectId;
-  comment?: Types.ObjectId;
-  userId: Types.ObjectId;
-  interactionTypes: interactionStatusType[];
-  isDeleted: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface commentType {
-  readonly _id?: string;
-  comments: string;
-  postId?: Types.ObjectId;
-  parentId?: Types.ObjectId;
-  userId?: Types.ObjectId;
-  likesCount: number;
-  isDeleted: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface ReportType {
-  postId: Types.ObjectId;
-  reporterId: Types.ObjectId;
-  reportedId: Types.ObjectId;
-  reportType: "POST" | "USER";
-  ticketStatus: "PENDING" | "RESOLVED";
-  adminFeedback?: string;
-  reasons?: string[];
-  description?: string;
+  readonly chatRoom: Types.ObjectId;
+  sender: Types.ObjectId;
+  messageType: "TEXT" | "IMAGE" | "VIDEO" | "VOICE" | "FILE";
+  media?: string;
+  message: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

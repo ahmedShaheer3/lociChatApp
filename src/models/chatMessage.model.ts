@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
+import { chatMessageType } from "../types/entityTypes";
 
-const chatMessageSchema = new Schema(
+const chatMessageSchema = new Schema<chatMessageType>(
   {
     chatRoom: {
       type: Schema.Types.ObjectId,

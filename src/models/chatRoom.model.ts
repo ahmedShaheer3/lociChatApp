@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
+import { chatRoomType } from "../types/entityTypes";
 
-const chatRoomSchema = new Schema(
+const chatRoomSchema = new Schema<chatRoomType>(
   {
     roomName: {
       type: String,
@@ -10,10 +11,7 @@ const chatRoomSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    lastMessage: {
-      type: Schema.Types.ObjectId,
-      ref: "ChatMessage",
-    },
+    lastMessage: { type: String, default: "" },
     createdBy: { type: Schema.Types.ObjectId, ref: "Users" },
     members: {
       type: [Schema.Types.ObjectId],
@@ -25,7 +23,6 @@ const chatRoomSchema = new Schema(
       ref: "Users",
       unique: true,
     },
-
     profileImage: {
       type: String,
       default: null,
