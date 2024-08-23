@@ -8,6 +8,7 @@ const socialTokenSchema = new Schema({
   socialId: { type: String, required: true },
   socialPlatform: { type: String, required: true },
 });
+
 /*
  ** fcm token schema
  */
