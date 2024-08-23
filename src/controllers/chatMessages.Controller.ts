@@ -9,7 +9,7 @@ import { ChatMessage } from "../models/chatMessage.model";
  ** getting chat all messages
  */
 const getChatMessages = async (req: Request, res: Response) => {
-  const { chatRoomId, memberId } = req.body;
+  const { chatRoomId, memberId } = req.query;
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
@@ -90,15 +90,8 @@ const sendMessage = async (req: Request, res: Response) => {
  ** delete message to chat room
  */
 const deleteMessage = async (req: Request, res: Response) => {
-  const { chatRoomId, messageId } = req.params;
-  const { memberId } = req.body;
+  const { messageId, memberId } = req.params;
   try {
-    // validation chat room
-    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
-    if (!chatRoom) {
-      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
-    }
-
     // validation chat room messaghe
     const message = await ChatMessage.findOne({ _id: messageId, sender: memberId });
     if (!message) {
@@ -106,13 +99,19 @@ const deleteMessage = async (req: Request, res: Response) => {
         .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Message not found with this messageId and memberId" });
     }
+    // validation chat room
+    const chatRoom = await ChatRoom.findOne({ _id: message.chatRoom });
+    if (!chatRoom) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
+    }
+
     // deleteing chat message
     await ChatMessage.findByIdAndDelete(messageId);
     // Updating the last message of the chat to the previous message after deletion if the message deleted was last message
     if (chatRoom.lastMessage.toString() === message._id.toString()) {
-      const lastMessage = await ChatMessage.findOne({ chatRoom: chatRoomId }, {}, { sort: { createdAt: -1 } });
+      const lastMessage = await ChatMessage.findOne({ chatRoom: chatRoom?._id }, {}, { sort: { createdAt: -1 } });
 
-      await ChatRoom.findByIdAndUpdate(chatRoomId, {
+      await ChatRoom.findByIdAndUpdate(chatRoom?._id, {
         lastMessage: lastMessage ? lastMessage?._id : null,
       });
     }

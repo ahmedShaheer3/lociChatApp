@@ -13,6 +13,7 @@ import { STATUS_CODE } from "../config";
  */
 const createGroupChat = async (req: Request, res: Response) => {
   const { roomName, members, admins, profileImage, roomPrivacy, createdBy } = req.body;
+
   try {
     // validation user
     const userData = await Users.findOne({ _id: createdBy });
@@ -20,8 +21,10 @@ const createGroupChat = async (req: Request, res: Response) => {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "user with id not found" });
     }
     // check for duplicates
-    // We want group chat to have minimum 3 members including admin
+    // this
     const tempMembers = [...new Set([...members, createdBy])];
+
+    // We want group chat to have minimum 3 members including admin
 
     console.log("🚀 ~ createGroupChat ~ tempMembers:", tempMembers);
 
@@ -42,6 +45,7 @@ const createGroupChat = async (req: Request, res: Response) => {
       createdBy,
     });
     console.log("🚀 ~ createGroupChat ~ groupChat:", groupChat);
+
     // logic to emit socket event about the new group chat added to the participants
     // members?.forEach((member: string) => {
     //   // don't emit the event for the logged in use as he is the one who is initiating the chat
@@ -174,8 +178,8 @@ const getUserChatRooms = async (req: Request, res: Response) => {
 /*
  ** Changing name of group chat
  */
-const changingGroupName = async (req: Request, res: Response) => {
-  const { chatId, roomName, userId } = req.body;
+const changingGroupDetails = async (req: Request, res: Response) => {
+  const { chatId, roomName, userId, roomPrivacy, profileImage } = req.body;
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findById(chatId);
@@ -189,7 +193,11 @@ const changingGroupName = async (req: Request, res: Response) => {
         .json({ success: false, message: "only admin are allowed to change group name" });
     }
     // updating data
-    const updatedRoom = await ChatRoom.findById(chatId, { roomName }, { new: true, runValidators: true });
+    const updatedRoom = await ChatRoom.findById(
+      chatId,
+      { roomName, roomPrivacy, profileImage },
+      { new: true, runValidators: true },
+    );
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: updatedRoom });
   } catch (error) {
     console.log("🚀 ~ changingGroupName ~ error:", error);
@@ -333,7 +341,7 @@ const deleteChatRoom = async (req: Request, res: Response) => {
  ** Leaving from group chat room
  */
 const leaveGroupChat = async (req: Request, res: Response) => {
-  const { chatRoomId, userId } = req.params;
+  const { chatRoomId, memberId } = req.params;
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: true });
@@ -341,7 +349,7 @@ const leaveGroupChat = async (req: Request, res: Response) => {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
     }
     // validating if user is part of this chat room
-    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(userId as string))) {
+    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(memberId as string))) {
       return res
         .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "You are not a part of this group chat" });
@@ -352,7 +360,7 @@ const leaveGroupChat = async (req: Request, res: Response) => {
       chatRoomId,
       {
         $pull: {
-          members: userId,
+          members: memberId,
         },
       },
       { new: true, runValidators: true },
@@ -457,7 +465,7 @@ export {
   getChatByUserIds,
   createGroupChat,
   createChatRoom,
-  changingGroupName,
+  changingGroupDetails,
   deleteGroupChat,
   leaveGroupChat,
   deleteChatRoom,
