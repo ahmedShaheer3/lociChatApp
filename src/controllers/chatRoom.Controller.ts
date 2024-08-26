@@ -55,7 +55,7 @@ const createChatRoom = async (req: Request, res: Response) => {
       roomName: memberData?.name,
       isGroupChat: false,
       admins: [createdBy],
-      participants: [member, createdBy],
+      members: [member, createdBy],
       profileImage: memberData?.profileImage,
       createdBy,
     });
@@ -102,7 +102,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     const chats = await ChatRoom.aggregate([
       {
         $match: {
-          participants: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
+          members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
         },
       },
       {
@@ -121,7 +121,6 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     return formatedError(res, error);
   }
 };
-
 /*
  ** Resting chatRoom unread count
  */
@@ -131,7 +130,7 @@ const resetUnreadCount = async (req: Request, res: Response) => {
   try {
     // UPDATE LAST MESSAGE OF CONVO IN CHAT
     const updateInbox = await ChatRoom.findOneAndUpdate(
-      { _id: chatRoomId, "users.userId": receiverId },
+      { _id: chatRoomId, "members.userId": receiverId },
       { $set: { "users.$.unreadMsgCount": 0 } },
       { new: true, runValidators: true },
     );
@@ -154,8 +153,8 @@ const getChatByUserIds = async (req: Request, res: Response) => {
     // Find the inbox where both senderId and receiverId match in the users array
     const updateInbox = await ChatRoom.findOne({
       $or: [
-        { "users.userId": new mongoose.Types.ObjectId(firstUser as string) },
-        { "users.userId": new mongoose.Types.ObjectId(SecondUser as string) },
+        { "members.userId": new mongoose.Types.ObjectId(firstUser as string) },
+        { "members.userId": new mongoose.Types.ObjectId(SecondUser as string) },
       ],
     });
 

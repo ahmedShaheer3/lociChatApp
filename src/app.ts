@@ -56,3 +56,6 @@ export { app };
 // TODO: morgan
 // TODO: chat app
 // TODO: logging solutions
+// TODO: UNread count
+// TODO: typing indicator
+// TODO: online/offline status

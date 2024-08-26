@@ -109,7 +109,6 @@ const deleteGroupChat = async (req: Request, res: Response) => {
         .status(STATUS_CODE.NOT_ACCEPTABLE)
         .json({ success: false, message: "only admin are allowed to delete group" });
     }
-
     // deleteing chat room
     await deleteChatRoomById(chatRoomId);
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
@@ -166,18 +165,12 @@ const leaveGroupChat = async (req: Request, res: Response) => {
  */
 // TODO:  CHECK REMOVIING FLOW EITHER SINGLE OR ARRAY
 const addNewMembersInGroupChat = async (req: Request, res: Response) => {
-  const { chatRoomId, memberId } = req.body;
+  const { chatRoomId, members = [] } = req.body;
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: true });
     if (!chatRoom) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
-    }
-    // validating if user is part of this chat room
-    if (chatRoom?.members?.includes(new mongoose.Types.ObjectId(memberId as string))) {
-      return res
-        .status(STATUS_CODE.NOT_FOUND)
-        .json({ success: false, message: "User is already a member in this group" });
     }
 
     // leaving the chat group
@@ -185,7 +178,7 @@ const addNewMembersInGroupChat = async (req: Request, res: Response) => {
       chatRoomId,
       {
         $push: {
-          members: memberId,
+          members: members,
         },
       },
       { new: true, runValidators: true },

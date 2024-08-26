@@ -32,7 +32,7 @@ export interface chatRoomType {
   admins: Types.ObjectId[];
   members: Types.ObjectId[];
   isGroupChat: boolean;
-  lastMessage: string;
+  lastMessage: Types.ObjectId;
   roomName: string;
   roomPrivacy: "PUBLIC" | "PRIVATE";
   profileImage?: string;
@@ -49,4 +49,8 @@ export interface chatMessageType {
   message: string;
   createdAt?: Date;
   updatedAt?: Date;
+  isEdited: boolean;
+  reactions: string[];
+  isSeen: boolean;
+  isDelivered: boolean;
 }

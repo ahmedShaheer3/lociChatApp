@@ -14,7 +14,7 @@ const chatRoomSchema = new Schema<chatRoomType>(
       type: Boolean,
       default: false,
     },
-    lastMessage: { type: String, default: "" },
+    lastMessage: { type: Schema.Types.ObjectId, ref: "ChatMessage" },
     createdBy: { type: Schema.Types.ObjectId, ref: "Users" },
     members: {
       type: [Schema.Types.ObjectId],
