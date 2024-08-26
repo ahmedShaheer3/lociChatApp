@@ -184,27 +184,26 @@ const getChatByChatId = async (req: Request, res: Response) => {
     return res.status(400).json({ error: true, message: "Error getting inboxId" });
   }
 };
-
 /*
  ** Deleting one to one chat
  */
-// TODO: Check the deletion flow
 const deleteChatRoom = async (req: Request, res: Response) => {
   const { chatRoomId, userId } = req.params;
   try {
     // validation chat room
-    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: false });
     if (!chatRoom) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room not found" });
     }
+
     // validating if user is room admin or not
-    if (!chatRoom?.admins?.includes(new mongoose.Types.ObjectId(userId as string))) {
+    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(userId as string))) {
       return res
         .status(STATUS_CODE.NOT_ACCEPTABLE)
-        .json({ success: false, message: "only admin are allowed to delete group" });
+        .json({ success: false, message: "only members are allowed to delete this chat room" });
     }
 
-    // deleteing chat room
+    // delete the chat even if user is not admin because it's a personal chat
     await deleteChatRoomById(chatRoomId);
     // emit event to other participant with left chat as a payload
     // emitSocketEvent(

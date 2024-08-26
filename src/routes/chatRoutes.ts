@@ -6,12 +6,18 @@ import {
   getUserChatRooms,
   resetUnreadCount,
 } from "../controllers/chatRoom.Controller";
-import { deleteMessage, getChatMessages, sendMessage } from "../controllers/chatMessages.Controller";
+import {
+  deleteMessage,
+  deleteUserMessages,
+  editMessage,
+  getChatMessages,
+  sendMessage,
+} from "../controllers/chatMessages.Controller";
 import {
   addNewMembersInGroupChat,
   createGroupChat,
   deleteGroupChat,
-  leaveGroupChat,
+  leaveChatRoom,
   removeMembersInGroupChat,
 } from "../controllers/groupChatRoom.controller";
 
@@ -28,22 +34,24 @@ const router = express.Router();
 router.route("/").post(createChatRoom);
 router.route("/:userId").get(getUserChatRooms);
 router.route("/").get(getChatByUserIds);
-router.route("/group/count").patch(resetUnreadCount);
+router.route("/count").patch(resetUnreadCount);
 router.route("/:chatRoomId").delete(deleteChatRoom);
+router.route("/user-messages/:chatRoomId/:memberId").delete(deleteUserMessages);
 /*
  ** Group Chat Room Routes
  *
  */
 router.route("/group").post(createGroupChat);
-router.route("/group/leave/:chatRoomId/:memberId").patch(leaveGroupChat);
 router.route("/group/add-member").patch(addNewMembersInGroupChat);
 router.route("/group/remove-member").patch(removeMembersInGroupChat);
 router.route("/group/:chatRoomId").delete(deleteGroupChat);
+router.route("/group/leave/:chatRoomId/:memberId").patch(leaveChatRoom);
 /*
  ** Messages Routes
  */
 router.route("/message").post(sendMessage);
 router.route("/message").get(getChatMessages);
-router.route("/message/:messageId/:memberId").get(deleteMessage);
+router.route("/message/:messageId/:memberId").patch(editMessage);
+router.route("/message/:messageId/:memberId").delete(deleteMessage);
 
 export default router;

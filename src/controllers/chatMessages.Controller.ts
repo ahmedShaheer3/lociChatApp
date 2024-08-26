@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { formatedError } from "../utils/formatedError";
 import { ChatRoom } from "../models/chatRoom.model";
 import { STATUS_CODE } from "../config";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { ChatMessage } from "../models/chatMessage.model";
 /*
  ** getting chat all messages
@@ -157,7 +157,9 @@ const deleteMessage = async (req: Request, res: Response) => {
  ** Edit message
  */
 const editMessage = async (req: Request, res: Response) => {
-  const { messageId, memberId, message } = req.params;
+  const messageId = req.params.messageId;
+  const memberId = req.params.memberId;
+  const { message } = req.body;
   try {
     // validation chat room messaghe
     const messageData = await ChatMessage.findOne({ _id: messageId, sender: memberId });
@@ -166,6 +168,7 @@ const editMessage = async (req: Request, res: Response) => {
         .status(STATUS_CODE.NOT_FOUND)
         .json({ success: false, message: "Message not found with this messageId and memberId" });
     }
+
     // deleteing chat message
     const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { message });
 
@@ -242,8 +245,7 @@ const addReaction = async (req: Request, res: Response) => {
  ** Delete message to chat room
  */
 const deleteUserMessages = async (req: Request, res: Response) => {
-  const { chatRoomId } = req.params;
-  const { memberId } = req.body;
+  const { chatRoomId, memberId } = req.params;
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
@@ -251,7 +253,7 @@ const deleteUserMessages = async (req: Request, res: Response) => {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
     }
     // Updating the last message of the chat to the previous message after deletion if the message deleted was last message
-    if (!chatRoom.members.includes(memberId)) {
+    if (!chatRoom.members.includes(new Types.ObjectId(memberId))) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "User is not part of this chat room" });
     }
     // deleteing user all messages

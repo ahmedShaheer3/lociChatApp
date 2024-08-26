@@ -124,7 +124,7 @@ const deleteGroupChat = async (req: Request, res: Response) => {
 /*
  ** Leaving from group chat room
  */
-const leaveGroupChat = async (req: Request, res: Response) => {
+const leaveChatRoom = async (req: Request, res: Response) => {
   const { chatRoomId, memberId } = req.params;
   try {
     // validation chat room
@@ -242,7 +242,7 @@ export {
   createGroupChat,
   changingGroupDetails,
   deleteGroupChat,
-  leaveGroupChat,
+  leaveChatRoom,
   addNewMembersInGroupChat,
   removeMembersInGroupChat,
 };
