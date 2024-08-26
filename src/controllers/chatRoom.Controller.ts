@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
-import chatAggregations from "../aggregations/chatAggrgations";
 import logger from "../utils/logger";
 import { ChatRoom, deleteChatRoomById } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
+import { ChatMessage } from "../models/chatMessage.model";
 // import { getUserDataById } from "../models/user.models";
 
 /*
  ** Creating a one to one chat room
  */
 const createChatRoom = async (req: Request, res: Response) => {
-  const { member, createdBy, message } = req.body;
+  const { member, createdBy, message, messageType, media } = req.body;
   try {
     // vaidating member and createdBy user
     if (member === createdBy) {
@@ -21,7 +21,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     // validation user
     const userData = await Users.findOne({ _id: createdBy });
     if (!userData) {
-      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "user not found" });
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "CreatedBy user not found" });
     }
 
     // validating member data
@@ -31,36 +31,34 @@ const createChatRoom = async (req: Request, res: Response) => {
     }
 
     // checking if chat room is already created by these two participant
-    const chatRoom = await ChatRoom.aggregate([
-      {
-        $match: {
-          isGroupChat: false,
-          $and: [
-            {
-              members: { $elemMatch: { $eq: new Types.ObjectId(member) } },
-            },
-            {
-              members: { $elemMatch: { $eq: new Types.ObjectId(createdBy) } },
-            },
-          ],
-        },
+    const chatRoom = await ChatRoom.findOne({
+      isGroupChat: false,
+      members: {
+        $all: [new Types.ObjectId(member as string), new Types.ObjectId(createdBy as string)],
       },
-    ]);
-    if (chatRoom?.length) {
+    });
+    console.log("🚀 ~ createChatRoom ~ chatRoom:", chatRoom);
+    if (chatRoom) {
       return res.status(STATUS_CODE.CONFLICT_DATA).json({ success: false, message: "Chat is already created" });
     }
 
     // Create a one on one chat room
     const newChatRoom = await ChatRoom.create({
-      roomName: memberData?.name,
+      roomName: "ONE-TO-ONE Chat",
       isGroupChat: false,
       admins: [createdBy],
       members: [member, createdBy],
-      profileImage: memberData?.profileImage,
       createdBy,
     });
     console.log("🚀 ~ createChatRoom ~ newChatRoom:", newChatRoom);
-    if (message) {
+    if (message || media) {
+      await ChatMessage.create({
+        chatRoom: newChatRoom?._id,
+        sender: createdBy,
+        message,
+        messageType,
+        media,
+      });
       // logic to emit socket event about the new chat added to the participants
       // emit event to other participants with new chat as a payload
       // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
@@ -78,7 +76,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     //   // emit event to other participants with new chat as a payload
     //   // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
     // });
-    return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Chat room successfully created" });
+    return res.status(STATUS_CODE.CREATED).json({ success: true, data: newChatRoom });
   } catch (error) {
     console.log("🚀 ~ createGroupChat ~ error:", error);
     /*
@@ -91,26 +89,29 @@ const createChatRoom = async (req: Request, res: Response) => {
  ** Getting user all chat rooms
  */
 const getUserChatRooms = async (req: Request, res: Response) => {
-  const { userId } = req.query;
+  const userId = req.params.userId;
 
   try {
-    // PIPELINE FOR GET INBOX OF USERS
-    const getUserInboxPipeline = chatAggregations.getUserInbox(userId as string);
-    console.log("🚀 ~ getUserChatRooms ~ getUserInboxPipeline:", getUserInboxPipeline);
+    // // PIPELINE FOR GET INBOX OF USERS
+    // const getUserInboxPipeline = chatAggregations.getUserInbox(userId as string);
+    // console.log("🚀 ~ getUserChatRooms ~ getUserInboxPipeline:", getUserInboxPipeline);
 
     // CALL AGGREGATION METHOD ON INBOX TABLE
-    const chats = await ChatRoom.aggregate([
-      {
-        $match: {
-          members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
-        },
-      },
-      {
-        $sort: {
-          updatedAt: -1,
-        },
-      },
-    ]);
+    // const chats = await ChatRoom.aggregate([
+    //   {
+    //     $match: {
+    //       members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
+    //     },
+    //   },
+    //   {
+    //     $sort: {
+    //       updatedAt: -1,
+    //     },
+    //   },
+    // ]);
+    // getting all user chat box
+    const chats = await ChatRoom.find({ members: { $all: [new Types.ObjectId(userId as string)] } });
+    console.log("🚀 ~ getUserChatRooms ~ chats:", chats);
 
     return res.status(200).json({ success: true, data: chats });
   } catch (error) {
@@ -122,15 +123,15 @@ const getUserChatRooms = async (req: Request, res: Response) => {
   }
 };
 /*
- ** Resting chatRoom unread count
+ ** Reseting chatRoom unread count
  */
 const resetUnreadCount = async (req: Request, res: Response) => {
-  const { chatRoomId, receiverId } = req.body;
+  const { chatRoomId, memeberId } = req.body;
 
   try {
     // UPDATE LAST MESSAGE OF CONVO IN CHAT
     const updateInbox = await ChatRoom.findOneAndUpdate(
-      { _id: chatRoomId, "members.userId": receiverId },
+      { _id: chatRoomId, "members.userId": memeberId },
       { $set: { "users.$.unreadMsgCount": 0 } },
       { new: true, runValidators: true },
     );
@@ -147,23 +148,23 @@ const resetUnreadCount = async (req: Request, res: Response) => {
  ** Getting chat room by userIds
  */
 const getChatByUserIds = async (req: Request, res: Response) => {
-  const { firstUser, SecondUser } = req.query;
+  const { firstUser, secondUser } = req.query;
 
   try {
-    // Find the inbox where both senderId and receiverId match in the users array
-    const updateInbox = await ChatRoom.findOne({
-      $or: [
-        { "members.userId": new mongoose.Types.ObjectId(firstUser as string) },
-        { "members.userId": new mongoose.Types.ObjectId(SecondUser as string) },
-      ],
+    const isChatRoom = await ChatRoom.findOne({
+      isGroupChat: false,
+      members: {
+        $all: [new Types.ObjectId(firstUser as string), new Types.ObjectId(secondUser as string)],
+      },
     });
+    console.log("🚀 ~ getChatByUserIds ~ updateInbox:", isChatRoom);
 
-    return res.status(200).json({ success: true, data: updateInbox || {} });
+    return res.status(200).json({ success: true, data: isChatRoom });
   } catch (error) {
     // PRINT ERROR LOGS
     logger.error("error getting inboxId by user ids", error);
 
-    return res.status(400).json({ error: true, message: "Error getting inboxId" });
+    return res.status(400).json({ error: true, message: "Unable to get chat room" });
   }
 };
 /*

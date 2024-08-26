@@ -33,6 +33,10 @@ const chatMessageSchema = new Schema<chatMessageType>(
       type: Boolean,
       default: false,
     },
+    reactions: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

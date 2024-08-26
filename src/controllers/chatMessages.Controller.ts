@@ -8,20 +8,17 @@ import { ChatMessage } from "../models/chatMessage.model";
  ** getting chat all messages
  */
 const getChatMessages = async (req: Request, res: Response) => {
-  const { chatRoomId, memberId } = req.query;
+  console.log("🚀 ~ getChatMessages ~ res:", res);
+  console.log("🚀 ~ getChatMessages ~ req:", req);
+  const chatRoomId = req.query.chatRoomId;
+  console.log("🚀 ~ getChatMessages ~ chatRoomId:", chatRoomId);
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
+    console.log("🚀 ~ getChatMessages ~ chatRoom:", chatRoom);
     if (!chatRoom) {
-      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room  not found" });
     }
-    // validating if user is part of this chat room
-    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(memberId as string))) {
-      return res
-        .status(STATUS_CODE.NOT_FOUND)
-        .json({ success: false, message: "You are not a part of this group chat" });
-    }
-
     const messages = await ChatMessage.find({ _id: chatRoomId }).sort({ createdAt: -1 });
     console.log("🚀 ~ getChatMessages ~ messages:", messages);
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: messages });
@@ -37,8 +34,9 @@ const getChatMessages = async (req: Request, res: Response) => {
  ** sendMessage to chat room
  */
 const sendMessage = async (req: Request, res: Response) => {
-  const { chatRoomId } = req.params;
+  const chatRoomId = req.params.chatRoomId;
   const { memberId, message, messageType, media } = req.body;
+
   try {
     // validation chat room
     const chatRoomData = await ChatRoom.findOne({ _id: chatRoomId });
@@ -170,7 +168,7 @@ const editMessage = async (req: Request, res: Response) => {
     }
 
     // deleteing chat message
-    const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { message });
+    const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { message }, { new: true });
 
     //       // logic to emit socket event about the new message created to the other participants
     //       chatRoom.members.forEach((participantObjectId) => {
@@ -256,8 +254,9 @@ const deleteUserMessages = async (req: Request, res: Response) => {
     if (!chatRoom.members.includes(new Types.ObjectId(memberId))) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "User is not part of this chat room" });
     }
+
     // deleteing user all messages
-    await ChatMessage.deleteMany({ chatRoomId, sender: memberId });
+    await ChatMessage.deleteMany({ chatRoom: chatRoomId, sender: memberId });
     //       // logic to emit socket event about the new message created to the other participants
     //       chatRoom.members.forEach((participantObjectId) => {
     //     // here the chat is the raw instance of the chat in which participants is the array of object ids of users

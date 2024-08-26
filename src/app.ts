@@ -20,6 +20,7 @@ app.use(
   morgan(morganFormat, {
     stream: {
       write: (message) => {
+        console.log("🚀 ~ message:", message);
         const logObject = {
           method: message.split(" ")[0],
           url: message.split(" ")[1],
@@ -59,3 +60,4 @@ export { app };
 // TODO: UNread count
 // TODO: typing indicator
 // TODO: online/offline status
+// TODO: paginations

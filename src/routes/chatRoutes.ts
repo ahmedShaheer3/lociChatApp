@@ -34,9 +34,9 @@ const router = express.Router();
 router.route("/").post(createChatRoom);
 router.route("/:userId").get(getUserChatRooms);
 router.route("/").get(getChatByUserIds);
-router.route("/count").patch(resetUnreadCount);
 router.route("/:chatRoomId").delete(deleteChatRoom);
 router.route("/user-messages/:chatRoomId/:memberId").delete(deleteUserMessages);
+router.route("/count").patch(resetUnreadCount);
 /*
  ** Group Chat Room Routes
  *
@@ -49,9 +49,10 @@ router.route("/group/leave/:chatRoomId/:memberId").patch(leaveChatRoom);
 /*
  ** Messages Routes
  */
-router.route("/message").post(sendMessage);
 router.route("/message").get(getChatMessages);
+router.route("/message/:chatRoomId").post(sendMessage);
 router.route("/message/:messageId/:memberId").patch(editMessage);
 router.route("/message/:messageId/:memberId").delete(deleteMessage);
+router.route("/messages/:chatRoomId/:memberId").delete(deleteUserMessages);
 
 export default router;

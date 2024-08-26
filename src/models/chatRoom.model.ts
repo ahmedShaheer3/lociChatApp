@@ -8,7 +8,6 @@ const chatRoomSchema = new Schema<chatRoomType>(
     roomName: {
       type: String,
       required: true,
-      unique: true,
     },
     isGroupChat: {
       type: Boolean,
@@ -19,7 +18,6 @@ const chatRoomSchema = new Schema<chatRoomType>(
     members: {
       type: [Schema.Types.ObjectId],
       ref: "Users",
-      unique: true,
       validate: {
         validator: function (members: Schema.Types.ObjectId[]) {
           return members.length <= 20;
@@ -30,7 +28,6 @@ const chatRoomSchema = new Schema<chatRoomType>(
     admins: {
       type: [Schema.Types.ObjectId],
       ref: "Users",
-      unique: true,
       validate: {
         validator: function (admins: Schema.Types.ObjectId[]) {
           return admins.length <= 5;
