@@ -89,6 +89,8 @@ const createChatRoom = async (req: Request, res: Response) => {
  */
 const getUserChatRooms = async (req: Request, res: Response) => {
   const userId = req.params.userId;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 5;
 
   try {
     // // PIPELINE FOR GET INBOX OF USERS
@@ -108,8 +110,15 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     //     },
     //   },
     // ]);
+    // getting total counts
+    const totalChatRooms = await ChatRoom.countDocuments({ members: { $all: [new Types.ObjectId(userId as string)] } });
+    // getting total pages according to limit provided
+    const totalPages = Math.ceil(totalChatRooms / limit);
+    console.log("🚀 ~ getUserChatRooms ~ totalPages:", totalPages);
     // getting all user chat box
-    const chats = await ChatRoom.find({ members: { $all: [new Types.ObjectId(userId as string)] } });
+    const chats = await ChatRoom.find({ members: { $all: [new Types.ObjectId(userId as string)] } })
+      .skip((page - 1) * limit)
+      .limit(limit);
     console.log("🚀 ~ getUserChatRooms ~ chats:", chats);
 
     return res.status(200).json({ success: true, data: chats });
