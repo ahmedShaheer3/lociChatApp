@@ -6,7 +6,6 @@ import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
-
 /*
  ** Creating a one to one chat room
  */
