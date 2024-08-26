@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 import { UserType } from "../types/entityTypes";
-
 /*
  ** Social token schema for user database used for when user is social signup
  */

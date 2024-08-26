@@ -1,7 +1,6 @@
 import express, { Express, Request, Response, json, urlencoded } from "express";
 import cors from "cors";
 
-import userApis from "./routes/userRoutes";
 import chatApis from "./routes/chatRoutes";
 
 import logger from "./utils/logger";
@@ -40,7 +39,6 @@ app.get("/", (req: Request, res: Response) => {
  ** Routers
  *
  */
-app.use("/api/v1/user", userApis);
 app.use("/api/v1/chat", chatApis);
 
 // middleware to return response of URL NOT FOUND
