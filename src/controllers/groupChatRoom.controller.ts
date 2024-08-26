@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { ChatRoom, deleteChatRoomById } from "../models/chatRoom.model";
+import { ChatRoom } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
@@ -110,7 +110,7 @@ const deleteGroupChat = async (req: Request, res: Response) => {
         .json({ success: false, message: "only admin are allowed to delete group" });
     }
     // deleteing chat room
-    await deleteChatRoomById(chatRoomId);
+    // await deleteChatRoomById(chatRoomId);
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
   } catch (error) {
     console.log("🚀 ~ deleteGroupChat ~ error:", error);

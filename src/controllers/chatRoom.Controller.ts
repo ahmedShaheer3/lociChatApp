@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import mongoose, { Types } from "mongoose";
 import logger from "../utils/logger";
-import { ChatRoom, deleteChatRoomById } from "../models/chatRoom.model";
+import { ChatRoom } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
-// import { getUserDataById } from "../models/user.models";
 
 /*
  ** Creating a one to one chat room
@@ -205,14 +204,23 @@ const deleteChatRoom = async (req: Request, res: Response) => {
     }
 
     // delete the chat even if user is not admin because it's a personal chat
-    await deleteChatRoomById(chatRoomId);
-    // emit event to other participant with left chat as a payload
-    // emitSocketEvent(
-    //   req,
-    //   otherParticipant._id?.toString(),
-    //   ChatEventEnum.LEAVE_CHAT_EVENT,
-    //   payload
-    // );
+    // await deleteChatRoomById(chatRoomId);
+    // deleteing all  user message in that chat room
+    await ChatMessage.deleteMany({ chatRoom: chatRoomId, sender: userId });
+
+    // checking if user exits then pull that user if there is only single user so delete the while chat
+    if (chatRoom?.members.length > 1) {
+      await ChatRoom.findByIdAndUpdate(chatRoomId, {
+        members: {
+          $pull: {
+            userId,
+          },
+        },
+      });
+    } else {
+      await ChatRoom.findByIdAndDelete(chatRoomId);
+    }
+
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
   } catch (error) {
     console.log("🚀 ~ deleteGroupChat ~ error:", error);
