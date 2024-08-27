@@ -55,9 +55,10 @@ app.use((req: Request, res: Response) => {
 export { app };
 
 // TODO: morgan
-// TODO: chat app
+// TODO: real time chat app
 // TODO: logging solutions
 // TODO: UNread count
 // TODO: typing indicator
 // TODO: online/offline status
 // TODO: paginations
+// TODO:

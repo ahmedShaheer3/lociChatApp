@@ -6,14 +6,15 @@ import {
   getChatMessages,
   getUserChatRooms,
   resetUnreadCount,
-} from "../controllers/chatRoom.Controller";
-import { deleteMessage, deleteUserMessages, editMessage, sendMessage } from "../controllers/chatMessages.Controller";
+} from "../controllers/chatRoom.controller";
+import { deleteMessage, deleteUserMessages, editMessage, sendMessage } from "../controllers/chatMessages.controller";
 import {
   addNewMembersInGroupChat,
   createGroupChat,
   deleteGroupChat,
   leaveChatRoom,
   removeMembersInGroupChat,
+  updateGroupDetails,
 } from "../controllers/groupChatRoom.controller";
 
 // import { checkSchemaError } from "../middleware/validations";
@@ -38,10 +39,11 @@ router.route("/:chatRoomId/:memberId").delete(deleteChatRoom);
  *
  */
 router.route("/group").post(createGroupChat);
+router.route("/group").patch(updateGroupDetails);
 router.route("/group/add-member").patch(addNewMembersInGroupChat);
 router.route("/group/remove-member").patch(removeMembersInGroupChat);
 router.route("/group/:chatRoomId").delete(deleteGroupChat);
-router.route("/group/leave/:chatRoomId/:memberId").patch(leaveChatRoom);
+router.route("/group/leave").patch(leaveChatRoom);
 /*
  ** Messages Routes
  */

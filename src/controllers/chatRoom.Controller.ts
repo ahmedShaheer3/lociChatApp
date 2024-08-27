@@ -110,13 +110,15 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     //   },
     // ]);
     // getting total counts
-    const totalChatRooms = await ChatRoom.countDocuments({ members: { $all: [new Types.ObjectId(userId as string)] } });
+    const totalChatRooms = await ChatRoom.countDocuments({
+      members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
+    });
     console.log("🚀 ~ getUserChatRooms ~ totalChatRooms:", totalChatRooms);
     // getting total pages according to limit provided
     const totalPages = Math.ceil(totalChatRooms / limit);
     console.log("🚀 ~ getUserChatRooms ~ totalPages:", totalPages);
     // getting all user chat box
-    const chats = await ChatRoom.find({ members: { $all: [new Types.ObjectId(userId as string)] } })
+    const chats = await ChatRoom.find({ members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } } })
       .populate({
         path: "members",
         select: "name nickName profileImage email",
