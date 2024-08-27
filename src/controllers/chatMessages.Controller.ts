@@ -4,32 +4,7 @@ import { ChatRoom } from "../models/chatRoom.model";
 import { STATUS_CODE } from "../config";
 import mongoose, { Types } from "mongoose";
 import { ChatMessage } from "../models/chatMessage.model";
-/*
- ** getting chat all messages
- */
-const getChatMessages = async (req: Request, res: Response) => {
-  console.log("🚀 ~ getChatMessages ~ res:", res);
-  console.log("🚀 ~ getChatMessages ~ req:", req);
-  const chatRoomId = req.query.chatRoomId;
-  console.log("🚀 ~ getChatMessages ~ chatRoomId:", chatRoomId);
-  try {
-    // validation chat room
-    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
-    console.log("🚀 ~ getChatMessages ~ chatRoom:", chatRoom);
-    if (!chatRoom) {
-      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room  not found" });
-    }
-    const messages = await ChatMessage.find({ _id: chatRoomId }).sort({ createdAt: -1 });
-    console.log("🚀 ~ getChatMessages ~ messages:", messages);
-    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: messages });
-  } catch (error) {
-    console.log("🚀 ~ getChatMessages ~ error:", error);
-    /*
-     ** Formated Error
-     */
-    return formatedError(res, error);
-  }
-};
+
 /*
  ** sendMessage to chat room
  */
@@ -282,4 +257,4 @@ const deleteUserMessages = async (req: Request, res: Response) => {
   }
 };
 
-export { getChatMessages, sendMessage, deleteMessage, deleteUserMessages, editMessage, addReaction };
+export { sendMessage, deleteMessage, deleteUserMessages, editMessage, addReaction };

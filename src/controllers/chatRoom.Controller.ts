@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 import logger from "../utils/logger";
 import { ChatRoom } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
@@ -193,10 +193,41 @@ const getChatByChatId = async (req: Request, res: Response) => {
   }
 };
 /*
+ ** getting chat all messages
+ */
+const getChatMessages = async (req: Request, res: Response) => {
+  const chatRoomId = req.params.chatRoomId;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 5;
+
+  console.log("🚀 ~ getChatMessages ~ page:", page);
+  console.log("🚀 ~ getChatMessages ~ limit:", limit);
+  console.log("🚀 ~ getChatMessages ~ req.query:", req.query);
+
+  try {
+    // validation chat room
+    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
+    console.log("🚀 ~ getChatMessages ~ chatRoom:", chatRoom);
+    if (!chatRoom) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room  not found" });
+    }
+    const messages = await ChatMessage.find({ chatRoom: chatRoomId }).sort({ createdAt: -1 });
+    console.log("🚀 ~ getChatMessages ~ messages:", messages);
+    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: messages });
+  } catch (error) {
+    console.log("🚀 ~ getChatMessages ~ error:", error);
+    logger.error("Error getting chatroom messages:", error);
+    /*
+     ** Formated Error
+     */
+    return formatedError(res, error);
+  }
+};
+/*
  ** Deleting one to one chat
  */
 const deleteChatRoom = async (req: Request, res: Response) => {
-  const { chatRoomId, userId } = req.params;
+  const { chatRoomId, memberId } = req.params;
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId, isGroupChat: false });
@@ -205,7 +236,7 @@ const deleteChatRoom = async (req: Request, res: Response) => {
     }
 
     // validating if user is room admin or not
-    if (!chatRoom?.members?.includes(new mongoose.Types.ObjectId(userId as string))) {
+    if (!chatRoom?.members?.includes(new Types.ObjectId(memberId as string))) {
       return res
         .status(STATUS_CODE.NOT_ACCEPTABLE)
         .json({ success: false, message: "only members are allowed to delete this chat room" });
@@ -214,16 +245,12 @@ const deleteChatRoom = async (req: Request, res: Response) => {
     // delete the chat even if user is not admin because it's a personal chat
     // await deleteChatRoomById(chatRoomId);
     // deleteing all  user message in that chat room
-    await ChatMessage.deleteMany({ chatRoom: chatRoomId, sender: userId });
+    await ChatMessage.deleteMany({ chatRoom: chatRoomId, sender: memberId });
 
     // checking if user exits then pull that user if there is only single user so delete the while chat
     if (chatRoom?.members.length > 1) {
       await ChatRoom.findByIdAndUpdate(chatRoomId, {
-        members: {
-          $pull: {
-            userId,
-          },
-        },
+        $pull: { members: memberId },
       });
     } else {
       await ChatRoom.findByIdAndDelete(chatRoomId);
@@ -239,4 +266,12 @@ const deleteChatRoom = async (req: Request, res: Response) => {
   }
 };
 
-export { getUserChatRooms, resetUnreadCount, getChatByUserIds, createChatRoom, deleteChatRoom, getChatByChatId };
+export {
+  getUserChatRooms,
+  resetUnreadCount,
+  getChatMessages,
+  getChatByUserIds,
+  createChatRoom,
+  deleteChatRoom,
+  getChatByChatId,
+};
