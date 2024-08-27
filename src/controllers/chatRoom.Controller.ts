@@ -111,16 +111,29 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     // ]);
     // getting total counts
     const totalChatRooms = await ChatRoom.countDocuments({ members: { $all: [new Types.ObjectId(userId as string)] } });
+    console.log("🚀 ~ getUserChatRooms ~ totalChatRooms:", totalChatRooms);
     // getting total pages according to limit provided
     const totalPages = Math.ceil(totalChatRooms / limit);
     console.log("🚀 ~ getUserChatRooms ~ totalPages:", totalPages);
     // getting all user chat box
     const chats = await ChatRoom.find({ members: { $all: [new Types.ObjectId(userId as string)] } })
+      .populate({
+        path: "members",
+        select: "name nickName profileImage email",
+      })
       .skip((page - 1) * limit)
       .limit(limit);
     console.log("🚀 ~ getUserChatRooms ~ chats:", chats);
 
-    return res.status(200).json({ success: true, data: chats });
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalPages,
+        page,
+        limit,
+        item: chats,
+      },
+    });
   } catch (error) {
     logger.error("Error getting user inbox:", error);
     /*
@@ -200,20 +213,34 @@ const getChatMessages = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 5;
 
-  console.log("🚀 ~ getChatMessages ~ page:", page);
-  console.log("🚀 ~ getChatMessages ~ limit:", limit);
-  console.log("🚀 ~ getChatMessages ~ req.query:", req.query);
-
   try {
     // validation chat room
     const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
-    console.log("🚀 ~ getChatMessages ~ chatRoom:", chatRoom);
     if (!chatRoom) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room  not found" });
     }
-    const messages = await ChatMessage.find({ chatRoom: chatRoomId }).sort({ createdAt: -1 });
+    // getting total counts
+    const totalMessages = await ChatMessage.countDocuments({ chatRoom: chatRoomId });
+    // getting total pages according to limit provided
+    const totalPages = Math.ceil(totalMessages / limit);
+    const messages = await ChatMessage.find({ chatRoom: chatRoomId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "sender",
+        select: "name nickName profileImage email",
+      })
+      .skip((page - 1) * limit)
+      .limit(limit);
     console.log("🚀 ~ getChatMessages ~ messages:", messages);
-    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: messages });
+    return res.status(STATUS_CODE.SUCCESS).json({
+      success: true,
+      data: {
+        totalPages,
+        page,
+        limit,
+        item: messages,
+      },
+    });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);
     logger.error("Error getting chatroom messages:", error);
