@@ -60,5 +60,3 @@ export { app };
 // TODO: UNread count
 // TODO: typing indicator
 // TODO: online/offline status
-// TODO: paginations
-// TODO:

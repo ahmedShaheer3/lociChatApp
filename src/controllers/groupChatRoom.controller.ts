@@ -4,6 +4,7 @@ import { ChatRoom } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
+import { ChatMessage } from "../models/chatMessage.model";
 /*
  ** Creating a group chat
  */
@@ -234,7 +235,6 @@ const removeMembersInGroupChat = async (req: Request, res: Response) => {
 /*
  ** Deleting group chat
  */
-// TODO: Check the deletion flow
 const deleteGroupChat = async (req: Request, res: Response) => {
   const { chatRoomId, userId } = req.params;
   try {
@@ -249,8 +249,10 @@ const deleteGroupChat = async (req: Request, res: Response) => {
         .status(STATUS_CODE.NOT_ACCEPTABLE)
         .json({ success: false, message: "only admin are allowed to delete group" });
     }
-    // deleteing chat room
-    // await deleteChatRoomById(chatRoomId);
+    // deleteing chat room all messages
+    await ChatMessage.deleteMany({ chatRoom: chatRoomId });
+    // dleetinh chat room
+    await ChatRoom.findByIdAndDelete(chatRoomId);
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
   } catch (error) {
     console.log("🚀 ~ deleteGroupChat ~ error:", error);
