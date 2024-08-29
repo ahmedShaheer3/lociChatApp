@@ -7,14 +7,14 @@ configDotenv({
 /*
  ** Connectiong to database
  */
-import { app } from "./app";
+import { httpServer } from "./app";
 import { connectToDatabase } from "./database";
 
 const port = process.env.PORT || 8000;
 
 connectToDatabase()
   .then(() => {
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
     });
   })
