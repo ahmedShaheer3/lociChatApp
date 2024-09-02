@@ -36,7 +36,7 @@ export const ChatEventEnum = Object.freeze({
   // ? when admin updates a group name
   UPDATE_GROUP_NAME_EVENT: "updateGroupName",
   // ? when new message is received
-  MESSAGE_RECEIVED_EVENT: "messageReceived",
+  MESSAGE: "message",
   // ? when there is new one on one chat, new group chat or user gets added in the group
   NEW_CHAT_EVENT: "newChat",
   // ? when there is an error in socket
@@ -44,9 +44,11 @@ export const ChatEventEnum = Object.freeze({
   // ? when participant stops typing
   STOP_TYPING_EVENT: "stopTyping",
   // ? when participant starts typing
-  TYPING_EVENT: "typing",
+  START_TYPING_EVENT: "startTyping",
   // ? when message is deleted
   MESSAGE_DELETE_EVENT: "messageDeleted",
+  // ? whensending server message to user
+  SERVER_MESSAGE: "serverMessage",
 });
 
 export const AvailableChatEvents = Object.values(ChatEventEnum);
