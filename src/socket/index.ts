@@ -18,7 +18,9 @@ const mountJoinChatEvent = (socket: Socket) => {
  */
 const mountParticipantTypingEvent = (socket: Socket) => {
   socket.on(ChatEventEnum.START_TYPING_EVENT, (chatId: string) => {
-    socket.in(chatId).emit(ChatEventEnum.START_TYPING_EVENT, chatId);
+    socket.to(chatId).emit(ChatEventEnum.START_TYPING_EVENT, {
+      sender: socket.data._id,
+    });
   });
 };
 /*
@@ -26,18 +28,18 @@ const mountParticipantTypingEvent = (socket: Socket) => {
  */
 const mountParticipantStoppedTypingEvent = (socket: Socket) => {
   socket.on(ChatEventEnum.STOP_TYPING_EVENT, (chatId: string) => {
-    socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, chatId);
+    socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, {
+      sender: socket.data._id,
+    });
   });
 };
 /*
- ** functring returing ioClinet
+ **  returing ioClinet
  */
 const initializeSocketIO = (ioClient: SocketIOServer) => {
   return ioClient.on(ChatEventEnum.CONNECTION_EVENT, (socket: Socket) => {
     try {
       console.log("New user connected", socket.id);
-      console.log("New user connected", socket.data);
-
       // Handle user connection and store socket ID
       socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId }: { userId: string }) => {
         console.log("🚀 ~ socket.on ~ userId:", userId);
