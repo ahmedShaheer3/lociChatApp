@@ -18,7 +18,7 @@ const mountJoinChatEvent = (socket: Socket) => {
  */
 const mountParticipantTypingEvent = (socket: Socket) => {
   socket.on(ChatEventEnum.START_TYPING_EVENT, (chatId: string) => {
-    socket.to(chatId).emit(ChatEventEnum.START_TYPING_EVENT, {
+    socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, {
       sender: socket.data._id,
     });
   });
