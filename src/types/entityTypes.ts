@@ -33,7 +33,7 @@ export interface chatRoomType {
   members: Types.ObjectId[];
   isGroupChat: boolean;
   lastMessage: Types.ObjectId;
-  roomName: string;
+  roomName?: string;
   roomPrivacy: "PUBLIC" | "PRIVATE";
   profileImage?: string;
   createdAt?: Date;

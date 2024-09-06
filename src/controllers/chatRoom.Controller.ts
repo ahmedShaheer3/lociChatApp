@@ -42,7 +42,6 @@ const createChatRoom = async (req: Request, res: Response) => {
 
     // Create a one on one chat room
     const newChatRoom = await ChatRoom.create({
-      roomName: "ONE-TO-ONE Chat",
       isGroupChat: false,
       admins: [createdBy],
       members: [member, createdBy],
