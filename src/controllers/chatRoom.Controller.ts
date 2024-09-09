@@ -122,6 +122,10 @@ const getUserChatRooms = async (req: Request, res: Response) => {
         path: "members",
         select: "name nickName profileImage email",
       })
+      .populate({
+        path: "lastMessage",
+        select: "message messageType",
+      })
       .skip((page - 1) * limit)
       .limit(limit);
     console.log("🚀 ~ getUserChatRooms ~ chats:", chats);
@@ -132,7 +136,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
         totalPages,
         page,
         limit,
-        item: chats,
+        items: chats,
       },
     });
   } catch (error) {
@@ -211,12 +215,16 @@ const getChatByChatId = async (req: Request, res: Response) => {
  */
 const getChatMessages = async (req: Request, res: Response) => {
   const chatRoomId = req.params.chatRoomId;
+  const memberId = req.params.memberId;
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 5;
 
   try {
     // validation chat room
-    const chatRoom = await ChatRoom.findOne({ _id: chatRoomId });
+    const chatRoom = await ChatRoom.findOne({
+      _id: chatRoomId,
+      members: { $elemMatch: { $eq: new Types.ObjectId(memberId as string) } },
+    });
     if (!chatRoom) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room  not found" });
     }
@@ -239,7 +247,7 @@ const getChatMessages = async (req: Request, res: Response) => {
         totalPages,
         page,
         limit,
-        item: messages,
+        items: messages,
       },
     });
   } catch (error) {

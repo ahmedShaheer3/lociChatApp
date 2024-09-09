@@ -32,7 +32,7 @@ router.route("/:userId").get(getUserChatRooms);
 router.route("/").get(getChatByUserIds);
 router.route("/user-messages/:chatRoomId/:memberId").delete(deleteUserMessages);
 router.route("/count").patch(resetUnreadCount);
-router.route("/messages/:chatRoomId").get(getChatMessages);
+router.route("/messages/:chatRoomId/:memberId").get(getChatMessages);
 router.route("/:chatRoomId/:memberId").delete(deleteChatRoom);
 /*
  ** Group Chat Room Routes

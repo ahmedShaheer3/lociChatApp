@@ -6,7 +6,7 @@ const chatRoomSchema = new Schema<chatRoomType>(
   {
     roomName: {
       type: String,
-      required: true,
+      default: "",
     },
     isGroupChat: {
       type: Boolean,
