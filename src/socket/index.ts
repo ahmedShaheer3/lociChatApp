@@ -19,7 +19,7 @@ const mountJoinChatEvent = (socket: Socket) => {
 const mountParticipantTypingEvent = (socket: Socket) => {
   socket.on(ChatEventEnum.START_TYPING_EVENT, (chatId: string) => {
     socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, {
-      sender: socket.data._id,
+      user: socket.data._id,
     });
   });
 };
@@ -29,7 +29,7 @@ const mountParticipantTypingEvent = (socket: Socket) => {
 const mountParticipantStoppedTypingEvent = (socket: Socket) => {
   socket.on(ChatEventEnum.STOP_TYPING_EVENT, (chatId: string) => {
     socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, {
-      sender: socket.data._id,
+      user: socket.data._id,
     });
   });
 };
@@ -59,7 +59,7 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
         console.log("🚀backend ~ socket.on ~ roomId:message", message, recipientId);
         // Emit the message to the recipient's room
         ioClient.to(recipientId).emit("receiveMessage", {
-          senderId: socket.data._id,
+          userId: socket.data._id,
           message,
         });
 

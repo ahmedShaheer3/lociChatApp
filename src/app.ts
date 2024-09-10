@@ -97,7 +97,7 @@ app.use("/api/v1/chat", chatApis);
 //     console.log("🚀backend ~ socket.on ~ roomId:message", message, recipientId);
 //     // Emit the message to the recipient's room
 //     ioClient.to(recipientId).emit("receiveMessage", {
-//       senderId: socket.data._id,
+//       userId: socket.data._id,
 //       message,
 //     });
 

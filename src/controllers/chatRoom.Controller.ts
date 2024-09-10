@@ -51,7 +51,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     if (text || media) {
       await ChatMessage.create({
         chatRoom: newChatRoom?._id,
-        sender: createdBy,
+        user: createdBy,
         text,
         messageType,
         media,
@@ -124,7 +124,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
       })
       .populate({
         path: "lastMessage",
-        select: "message messageType",
+        select: "text messageType",
       })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -235,7 +235,7 @@ const getChatMessages = async (req: Request, res: Response) => {
     const messages = await ChatMessage.find({ chatRoom: chatRoomId })
       .sort({ createdAt: -1 })
       .populate({
-        path: "sender",
+        path: "user",
         select: "name nickName profileImage email",
       })
       .skip((page - 1) * limit)
@@ -281,7 +281,7 @@ const deleteChatRoom = async (req: Request, res: Response) => {
     // delete the chat even if user is not admin because it's a personal chat
     // await deleteChatRoomById(chatRoomId);
     // deleteing all  user message in that chat room
-    await ChatMessage.deleteMany({ chatRoom: chatRoomId, sender: memberId });
+    await ChatMessage.deleteMany({ chatRoom: chatRoomId, user: memberId });
 
     // checking if user exits then pull that user if there is only single user so delete the while chat
     if (chatRoom?.members.length > 1) {

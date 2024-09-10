@@ -26,7 +26,7 @@ const sendMessage = async (req: Request, res: Response) => {
     }
     const newMessage = await ChatMessage.create({
       chatRoom: chatRoomId,
-      sender: memberId,
+      user: memberId,
       text,
       messageType,
       media,
@@ -80,7 +80,7 @@ const deleteMessage = async (req: Request, res: Response) => {
   const { messageId, memberId } = req.params;
   try {
     // validation chat room messaghe
-    const message = await ChatMessage.findOne({ _id: messageId, sender: memberId });
+    const message = await ChatMessage.findOne({ _id: messageId, user: memberId });
     if (!message) {
       return res
         .status(STATUS_CODE.NOT_FOUND)
@@ -135,7 +135,7 @@ const editMessage = async (req: Request, res: Response) => {
   const { text } = req.body;
   try {
     // validation chat room messaghe
-    const messageData = await ChatMessage.findOne({ _id: messageId, sender: memberId });
+    const messageData = await ChatMessage.findOne({ _id: messageId, user: memberId });
     if (!messageData) {
       return res
         .status(STATUS_CODE.NOT_FOUND)
@@ -176,7 +176,7 @@ const addReaction = async (req: Request, res: Response) => {
   const { messageId, memberId, reaction } = req.params;
   try {
     // validation chat room messaghe
-    const message = await ChatMessage.findOne({ _id: messageId, sender: memberId });
+    const message = await ChatMessage.findOne({ _id: messageId, user: memberId });
     if (!message) {
       return res
         .status(STATUS_CODE.NOT_FOUND)
@@ -231,7 +231,7 @@ const deleteUserMessages = async (req: Request, res: Response) => {
     }
 
     // deleteing user all messages
-    await ChatMessage.deleteMany({ chatRoom: chatRoomId, sender: memberId });
+    await ChatMessage.deleteMany({ chatRoom: chatRoomId, user: memberId });
     //       // logic to emit socket event about the new message created to the other participants
     //       chatRoom.members.forEach((participantObjectId) => {
     //     // here the chat is the raw instance of the chat in which participants is the array of object ids of users

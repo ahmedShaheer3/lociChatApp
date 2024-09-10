@@ -8,7 +8,7 @@ const chatMessageSchema = new Schema<chatMessageType>(
       required: true,
       ref: "ChatRoom",
     },
-    sender: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: "Users",
       required: true,

@@ -43,7 +43,7 @@ export interface chatRoomType {
 export interface chatMessageType {
   readonly _id?: string;
   readonly chatRoom: Types.ObjectId;
-  sender: Types.ObjectId;
+  user: Types.ObjectId;
   messageType: "TEXT" | "IMAGE" | "VIDEO" | "VOICE" | "FILE";
   audio?: string;
   image?: string;
