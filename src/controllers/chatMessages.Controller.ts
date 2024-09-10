@@ -143,7 +143,7 @@ const editMessage = async (req: Request, res: Response) => {
     }
 
     // deleteing chat message
-    const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { message }, { new: true });
+    const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { message, edited: true }, { new: true });
 
     //       // logic to emit socket event about the new message created to the other participants
     //       chatRoom.members.forEach((participantObjectId) => {

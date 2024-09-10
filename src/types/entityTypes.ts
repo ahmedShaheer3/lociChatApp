@@ -45,7 +45,9 @@ export interface chatMessageType {
   readonly chatRoom: Types.ObjectId;
   sender: Types.ObjectId;
   messageType: "TEXT" | "IMAGE" | "VIDEO" | "VOICE" | "FILE";
-  media?: string;
+  audio?: string;
+  image?: string;
+  video?: string;
   message: string;
   createdAt?: Date;
   updatedAt?: Date;

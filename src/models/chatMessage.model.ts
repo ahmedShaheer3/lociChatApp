@@ -17,7 +17,13 @@ const chatMessageSchema = new Schema<chatMessageType>(
       type: String,
       default: "",
     },
-    media: {
+    image: {
+      type: String,
+    },
+    video: {
+      type: String,
+    },
+    audio: {
       type: String,
     },
     messageType: {
