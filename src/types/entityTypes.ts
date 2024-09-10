@@ -48,7 +48,7 @@ export interface chatMessageType {
   audio?: string;
   image?: string;
   video?: string;
-  message: string;
+  text: string;
   createdAt?: Date;
   updatedAt?: Date;
   reactions: string[];

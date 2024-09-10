@@ -13,7 +13,7 @@ const chatMessageSchema = new Schema<chatMessageType>(
       ref: "Users",
       required: true,
     },
-    message: {
+    text: {
       type: String,
       default: "",
     },

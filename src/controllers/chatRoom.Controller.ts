@@ -10,7 +10,7 @@ import { ChatMessage } from "../models/chatMessage.model";
  ** Creating a one to one chat room
  */
 const createChatRoom = async (req: Request, res: Response) => {
-  const { member, createdBy, message, messageType, media } = req.body;
+  const { member, createdBy, text, messageType, media } = req.body;
   try {
     // vaidating member and createdBy user
     if (member === createdBy) {
@@ -48,11 +48,11 @@ const createChatRoom = async (req: Request, res: Response) => {
       createdBy,
     });
     console.log("🚀 ~ createChatRoom ~ newChatRoom:", newChatRoom);
-    if (message || media) {
+    if (text || media) {
       await ChatMessage.create({
         chatRoom: newChatRoom?._id,
         sender: createdBy,
-        message,
+        text,
         messageType,
         media,
       });

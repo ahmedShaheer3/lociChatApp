@@ -10,7 +10,7 @@ import { ChatMessage } from "../models/chatMessage.model";
  */
 const sendMessage = async (req: Request, res: Response) => {
   const chatRoomId = req.params.chatRoomId;
-  const { memberId, message, messageType, media } = req.body;
+  const { memberId, text, messageType, media } = req.body;
 
   try {
     // validation chat room
@@ -27,7 +27,7 @@ const sendMessage = async (req: Request, res: Response) => {
     const newMessage = await ChatMessage.create({
       chatRoom: chatRoomId,
       sender: memberId,
-      message,
+      text,
       messageType,
       media,
     });
@@ -132,7 +132,7 @@ const deleteMessage = async (req: Request, res: Response) => {
 const editMessage = async (req: Request, res: Response) => {
   const messageId = req.params.messageId;
   const memberId = req.params.memberId;
-  const { message } = req.body;
+  const { text } = req.body;
   try {
     // validation chat room messaghe
     const messageData = await ChatMessage.findOne({ _id: messageId, sender: memberId });
@@ -143,7 +143,7 @@ const editMessage = async (req: Request, res: Response) => {
     }
 
     // deleteing chat message
-    const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { message, edited: true }, { new: true });
+    const updatedMsg = await ChatMessage.findByIdAndUpdate(messageId, { text, edited: true }, { new: true });
 
     //       // logic to emit socket event about the new message created to the other participants
     //       chatRoom.members.forEach((participantObjectId) => {
