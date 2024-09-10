@@ -25,11 +25,19 @@ const chatMessageSchema = new Schema<chatMessageType>(
       enum: ["TEXT", "IMAGE", "VIDEO", "VOICE", "FILE"],
       default: "TEXT",
     },
-    isEdited: {
+    edited: {
       type: Boolean,
       default: false,
     },
-    isSeen: {
+    pending: {
+      type: Boolean,
+      default: false,
+    },
+    sent: {
+      type: Boolean,
+      default: false,
+    },
+    received: {
       type: Boolean,
       default: false,
     },

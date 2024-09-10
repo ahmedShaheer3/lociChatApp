@@ -49,8 +49,27 @@ export interface chatMessageType {
   message: string;
   createdAt?: Date;
   updatedAt?: Date;
-  isEdited: boolean;
   reactions: string[];
-  isSeen: boolean;
-  isDelivered: boolean;
+  edited?: boolean;
+  sent?: boolean;
+  received?: boolean;
+  pending?: boolean;
 }
+
+// export interface chatMessageType {
+//   readonly _id?: string;
+//   readonly chatRoom: Types.ObjectId;
+//   user: Types.ObjectId;
+//   messageType: "TEXT" | "IMAGE" | "VIDEO" | "VOICE" | "FILE";
+//   image?: string;
+//   video?: string;
+//   audio?: string;
+//   text: string;
+//   updatedAt?: Date;
+//   createdAt?: Date;
+//   reactions: string[];
+//   edited?: boolean;
+//   sent?: boolean;
+//   received?: boolean;
+//   pending?: boolean;
+// }
