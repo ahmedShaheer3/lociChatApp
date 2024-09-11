@@ -151,7 +151,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
  ** Reseting chatRoom unread count
  */
 const resetUnreadCount = async (req: Request, res: Response) => {
-  const { chatRoomId, memeberId } = req.body;
+  const { chatRoomId, memeberId } = req.params;
 
   try {
     // UPDATE LAST MESSAGE OF CONVO IN CHAT
@@ -160,6 +160,8 @@ const resetUnreadCount = async (req: Request, res: Response) => {
       { $set: { "users.$.unreadMsgCount": 0 } },
       { new: true, runValidators: true },
     );
+
+    console.log("🚀 ~ resetUnreadCount ~ updateInbox:", updateInbox);
 
     return res.status(200).json({ success: true, data: updateInbox });
   } catch (error) {
