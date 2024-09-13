@@ -154,10 +154,10 @@ const resetUnreadCount = async (req: Request, res: Response) => {
   const { chatRoomId, memeberId } = req.params;
 
   try {
-    // UPDATE LAST MESSAGE OF CONVO IN CHAT
+    // UPDATE unread count on chat
     const updateInbox = await ChatRoom.findOneAndUpdate(
       { _id: chatRoomId, "members.userId": memeberId },
-      { $set: { "users.$.unreadMsgCount": 0 } },
+      { $set: { "members.$.unreadMsgCount": 0 } },
       { new: true, runValidators: true },
     );
 

@@ -45,6 +45,7 @@ const ioClient = new SocketServer(httpServer, {
     methods: ["GET", "POST"],
   },
 });
+
 app.set("ioClient", ioClient);
 app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ success: true, greeting: "Hello / from API" });

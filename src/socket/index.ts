@@ -40,6 +40,7 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
   return ioClient.on(ChatEventEnum.CONNECTION_EVENT, (socket: Socket) => {
     try {
       console.log("New user connected", socket.id);
+
       // Handle user connection and store socket ID
       socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId }: { userId: string }) => {
         console.log("🚀 ~ socket.on ~ userId:", userId);
