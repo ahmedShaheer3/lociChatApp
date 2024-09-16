@@ -56,10 +56,11 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
       mountParticipantStoppedTypingEvent(socket);
 
       // user send message
-      socket.on(ChatEventEnum.MESSAGE, ({ message, recipientId }) => {
-        console.log("🚀backend ~ socket.on ~ roomId:message", message, recipientId);
+      socket.on(ChatEventEnum.MESSAGE, ({ message, userId }) => {
+        console.log("🚀backend ~ socket.on ~ roomId:message", message, userId);
+
         // Emit the message to the recipient's room
-        ioClient.to(recipientId).emit("receiveMessage", {
+        ioClient.to(userId).emit(ChatEventEnum.MESSAGE, {
           userId: socket.data._id,
           message,
         });
