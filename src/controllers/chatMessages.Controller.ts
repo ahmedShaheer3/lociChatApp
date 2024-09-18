@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { formatedError } from "../utils/formatedError";
 import { ChatRoom } from "../models/chatRoom.model";
-import { STATUS_CODE } from "../config";
+import { ChatEventEnum, STATUS_CODE } from "../config";
 import mongoose, { Types } from "mongoose";
 import { ChatMessage } from "../models/chatMessage.model";
+import { emitSocketEvent } from "../socket";
+import { Users } from "../models/user.models";
 
 /*
  ** sendMessage to chat room
@@ -13,10 +15,14 @@ const sendMessage = async (req: Request, res: Response) => {
   const { memberId, text, messageType, media } = req.body;
 
   try {
+    const memberData = await Users.findById(memberId);
+    if (!memberData) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Member not found" });
+    }
     // validation chat room
     const chatRoomData = await ChatRoom.findOne({ _id: chatRoomId });
     if (!chatRoomData) {
-      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Group chat room not found" });
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room not found" });
     }
     // validating if user is part of this chat room
     if (!chatRoomData?.members?.includes(new mongoose.Types.ObjectId(memberId as string))) {
@@ -46,24 +52,26 @@ const sendMessage = async (req: Request, res: Response) => {
     //   },
     //   { new: true },
     // );
-    //       // logic to emit socket event about the new message created to the other participants
-    //       chatRoom.members.forEach((participantObjectId) => {
-    //     // here the chat is the raw instance of the chat in which participants is the array of object ids of users
-    //     // avoid emitting event to the user who is sending the message
-    //     if (participantObjectId.toString() === req.user._id.toString()) return;
+    // refactoring messaging
+    // Add the user data to the message response manually
+    const messageWithUserData = {
+      ...newMessage?.toObject(),
+      user: {
+        _id: memberData?._id,
+        name: memberData?.name,
+        profileImage: memberData?.profileImage,
+      },
+    };
+    console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
+    // logic to emit socket event about the new message created to the other participants
+    chatRoomData.members.forEach((participantObjectId) => {
+      // here the chat is the raw instance of the chat in which participants is the array of object ids of users
+      // avoid emitting event to the user who is sending the message
+      if (participantObjectId.toString() === memberId) return;
 
-    //     // emit the receive message event to the other participants with received message as the payload
-    //     emitSocketEvent(
-    //       req,
-    //       participantObjectId.toString(),
-    //       ChatEventEnum.MESSAGE_RECEIVED_EVENT,
-    //       receivedMessage
-    //     );
-    //   });
-    // const constructingMessage = {
-
-    // }
-
+      // emit the receive message event to the other participants with received message as the payload
+      emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE, messageWithUserData);
+    });
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: newMessage });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);

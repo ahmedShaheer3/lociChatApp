@@ -49,13 +49,15 @@ const createChatRoom = async (req: Request, res: Response) => {
     });
     console.log("🚀 ~ createChatRoom ~ newChatRoom:", newChatRoom);
     if (text || media) {
-      await ChatMessage.create({
+      const newMessage = await ChatMessage.create({
         chatRoom: newChatRoom?._id,
         user: createdBy,
         text,
         messageType,
         media,
       });
+      // update the chat's last message which could be utilized to show last message in the list item
+      await ChatRoom.findByIdAndUpdate(newChatRoom?._id, { lastMessage: newMessage._id });
       // logic to emit socket event about the new chat added to the participants
       // emit event to other participants with new chat as a payload
       // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
