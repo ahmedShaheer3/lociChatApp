@@ -34,3 +34,10 @@ export type locationType = {
   coordinates: number[];
   maxDistance?: number;
 };
+
+export type socketUserType = {
+  userId: string;
+  profileImage?: string;
+  nickName?: string;
+  name?: string;
+};

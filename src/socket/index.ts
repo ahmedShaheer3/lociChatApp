@@ -1,12 +1,13 @@
 import { Request } from "express";
 import { ChatEventEnum } from "../config";
 import { Server as SocketIOServer, Socket } from "socket.io";
+import { socketUserType } from "../types/appTypes";
 /*
  ** Registering to an event so can user can joing chat rooms
  */
 const mountJoinChatEvent = (socket: Socket) => {
-  socket.on(ChatEventEnum.JOIN_CHAT_EVENT, (chatId: string) => {
-    console.log(`User joined the chat 🤝. chatId: `, chatId);
+  socket.on(ChatEventEnum.JOIN_CHAT_EVENT, (chatId: string, userId: string) => {
+    console.log(`User joined the chat 🤝. chatId: `, chatId, userId);
     // joining the room with the chatId will allow specific events to be fired where we don't bother about the users like typing events
     // E.g. When user types we don't want to emit that event to specific participant.
     // We want to just emit that to the chat where the typing is happening
@@ -44,9 +45,12 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
       console.log("New user connected", socket.id);
 
       // Handle user connection and store socket ID
-      socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId }: { userId: string }) => {
+      socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId }: socketUserType) => {
         console.log("🚀 ~ socket.on ~ userId:", userId);
         socket.data._id = userId;
+        // socket.data.name = name;
+        // socket.data.nickName = nickName;
+        // socket.data.profileImage = profileImage;
         socket.join(userId);
         socket.emit(ChatEventEnum.SERVER_MESSAGE, "You have connected to server and ready to go. !!!!!");
         console.log(`User ${userId} connected with socket ID: ${socket.id}`);

@@ -6,6 +6,7 @@ import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
+// import { emitSocketEvent } from "../socket";
 /*
  ** Creating a one to one chat room
  */
@@ -69,11 +70,11 @@ const createChatRoom = async (req: Request, res: Response) => {
     }
 
     // logic to emit socket event about the new group chat added to the participants
-    // members?.forEach((member: string) => {
+    // newChatRoom?.members?.forEach((member: string) => {
     //   // don't emit the event for the logged in use as he is the one who is initiating the chat
     //   if (member === createdBy) return;
     //   // emit event to other participants with new chat as a payload
-    //   // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
+    //   emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
     // });
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: newChatRoom });
   } catch (error) {
