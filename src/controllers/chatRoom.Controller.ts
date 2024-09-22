@@ -57,6 +57,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     });
     console.log("🚀 ~ createChatRoom ~ newChatRoom:", newChatRoom);
     if (text || media) {
+      // creaing message
       const newMessage = await ChatMessage.create({
         chatRoom: newChatRoom?._id,
         user: createdBy,
@@ -65,12 +66,17 @@ const createChatRoom = async (req: Request, res: Response) => {
         media,
       });
       // update the chat's last message which could be utilized to show last message in the list item
-
-      const updatedChatRoom = await ChatRoom.findByIdAndUpdate(
-        newChatRoom?._id,
-        { lastMessage: newMessage._id },
-        { new: true, runValidators: true },
-      );
+      await ChatRoom.findByIdAndUpdate(newChatRoom?._id, { lastMessage: newMessage._id });
+      // getting chat room
+      const chatRoom = await ChatRoom.findById(newChatRoom?._id)
+        .populate({
+          path: "members",
+          select: "name nickName profileImage email",
+        })
+        .populate({
+          path: "lastMessage",
+          select: "text messageType",
+        });
       // logic to emit socket event about the new chat added to the participants
       // emit event to other participants with new chat as a payload
       // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
@@ -83,7 +89,7 @@ const createChatRoom = async (req: Request, res: Response) => {
       // console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
       // logic to emit socket event about the new group chat added to the participants
       // emit event to other participants with new chast as a payload
-      emitSocketEvent(req, member, ChatEventEnum.NEW_CHAT_EVENT, updatedChatRoom);
+      emitSocketEvent(req, member, ChatEventEnum.NEW_CHAT_EVENT, chatRoom);
     }
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: newChatRoom });
   } catch (error) {
@@ -130,6 +136,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     console.log("🚀 ~ getUserChatRooms ~ totalPages:", totalPages);
     // getting all user chat box
     const chats = await ChatRoom.find({ members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } } })
+      .sort({ updatedAt: -1 })
       .populate({
         path: "members",
         select: "name nickName profileImage email",
