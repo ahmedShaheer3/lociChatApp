@@ -40,4 +40,5 @@ export type socketUserType = {
   profileImage?: string;
   nickName?: string;
   name?: string;
+  chatId?: string;
 };

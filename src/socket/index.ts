@@ -6,22 +6,26 @@ import { socketUserType } from "../types/appTypes";
  ** Registering to an event so can user can joing chat rooms
  */
 const mountJoinChatEvent = (socket: Socket) => {
-  socket.on(ChatEventEnum.JOIN_CHAT_EVENT, (chatId: string) => {
-    console.log(`User joined the chat 🤝. chatId: `, chatId);
+  socket.on(ChatEventEnum.JOIN_CHAT_EVENT, ({ chatId, userId }: { chatId: string; userId: string }) => {
+    console.log(`${userId} joined the chat 🤝. chatId: `, chatId);
     // joining the room with the chatId will allow specific events to be fired where we don't bother about the users like typing events
     // E.g. When user types we don't want to emit that event to specific participant.
     // We want to just emit that to the chat where the typing is happening
     socket.join(chatId);
+    socket.emit(ChatEventEnum.SERVER_MESSAGE, `${userId} have joined room with id ${chatId}`);
   });
 };
 /*
  ** Registering to an event so that users know about typing
  */
 const mountParticipantTypingEvent = (socket: Socket) => {
-  socket.on(ChatEventEnum.START_TYPING_EVENT, (chatId: string) => {
-    console.log("🚀 ~ socket.on ~ chatId:", chatId);
-    socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, {
-      user: socket.data._id,
+  socket.on(ChatEventEnum.START_TYPING_EVENT, ({ chatId }: { chatId: string }) => {
+    console.log("🚀 ~ socket.on ~ startyping:chatId:", chatId);
+    // socket.in(chatId).emit(ChatEventEnum.START_TYPING_EVENT, chatId);
+    socket.in(chatId).emit(ChatEventEnum.START_TYPING_EVENT, {
+      userId: socket.data._id,
+      name: socket.data.name,
+      chatId: chatId,
     });
   });
 };
@@ -29,10 +33,12 @@ const mountParticipantTypingEvent = (socket: Socket) => {
  ** Registering to an event so that users know about typing
  */
 const mountParticipantStoppedTypingEvent = (socket: Socket) => {
-  socket.on(ChatEventEnum.STOP_TYPING_EVENT, (chatId: string) => {
-    console.log("🚀 ~ socket.on ~ chatId:", chatId);
+  socket.on(ChatEventEnum.STOP_TYPING_EVENT, ({ chatId }: { chatId: string }) => {
+    console.log("🚀 ~ socket.on ~stopTyping: chatId:", chatId);
     socket.in(chatId).emit(ChatEventEnum.STOP_TYPING_EVENT, {
-      user: socket.data._id,
+      userId: socket.data._id,
+      name: socket.data.name,
+      chatId: chatId,
     });
   });
 };
@@ -45,12 +51,11 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
       console.log("New user connected", socket.id);
 
       // Handle user connection and store socket ID
-      socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId }: socketUserType) => {
+      socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId, name, nickName }: socketUserType) => {
         console.log("🚀 ~ socket.on ~ userId:", userId);
         socket.data._id = userId;
-        // socket.data.name = name;
-        // socket.data.nickName = nickName;
-        // socket.data.profileImage = profileImage;
+        socket.data.name = name;
+        socket.data.nickName = nickName;
         socket.join(userId);
         socket.emit(ChatEventEnum.SERVER_MESSAGE, "You have connected to server and ready to go. !!!!!");
         console.log(`User ${userId} connected with socket ID: ${socket.id}`);
@@ -75,9 +80,9 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
       });
 
       // User leaves a room
-      socket.on(ChatEventEnum.LEAVE_CHAT_EVENT, ({ chatRoom, userId }: { chatRoom: string; userId: string }) => {
-        socket.leave(chatRoom);
-        console.log(`User ${userId} left room: ${chatRoom}`);
+      socket.on(ChatEventEnum.LEAVE_CHAT_EVENT, ({ chatId, userId }: { chatId: string; userId: string }) => {
+        socket.leave(chatId);
+        console.log(`User ${userId} left room: ${chatId}`);
       });
 
       // Handle user disconnect
