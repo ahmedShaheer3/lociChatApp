@@ -104,7 +104,7 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
 
 // Utility function responsible to abstract the logic of socket emission via the io instance
 // and sending event into it
-const emitSocketEvent = (req: Request, roomId: string, event: string, payload: string | object) => {
+const emitSocketEvent = (req: Request, roomId: string, event: string, payload: string | object | unknown) => {
   req.app.get("ioClient").in(roomId).emit(event, payload);
 };
 

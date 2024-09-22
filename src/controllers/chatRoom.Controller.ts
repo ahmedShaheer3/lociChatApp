@@ -4,22 +4,29 @@ import logger from "../utils/logger";
 import { ChatRoom } from "../models/chatRoom.model";
 import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
-import { STATUS_CODE } from "../config";
+import { ChatEventEnum, STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
+import { emitSocketEvent } from "../socket";
 // import { emitSocketEvent } from "../socket";
 /*
  ** Creating a one to one chat room
+ ** for  one-to-one there should be text beacuse on single chat you cannot only just create room without any message or media
  */
 const createChatRoom = async (req: Request, res: Response) => {
   const { member, createdBy, text, messageType, media } = req.body;
   try {
+    if (!text && !media) {
+      return res
+        .status(STATUS_CODE.NOT_ACCEPTABLE)
+        .json({ success: false, message: "Text/Media data required for single chat" });
+    }
     // vaidating member and createdBy user
     if (member === createdBy) {
       return res.status(STATUS_CODE.NOT_ACCEPTABLE).json({ success: false, message: "You cannot chat with yourself" });
     }
     // validation user
-    const userData = await Users.findOne({ _id: createdBy });
-    if (!userData) {
+    const createrData = await Users.findOne({ _id: createdBy });
+    if (!createrData) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "CreatedBy user not found" });
     }
 
@@ -58,7 +65,12 @@ const createChatRoom = async (req: Request, res: Response) => {
         media,
       });
       // update the chat's last message which could be utilized to show last message in the list item
-      await ChatRoom.findByIdAndUpdate(newChatRoom?._id, { lastMessage: newMessage._id });
+
+      const updatedChatRoom = await ChatRoom.findByIdAndUpdate(
+        newChatRoom?._id,
+        { lastMessage: newMessage._id },
+        { new: true, runValidators: true },
+      );
       // logic to emit socket event about the new chat added to the participants
       // emit event to other participants with new chat as a payload
       // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
@@ -67,15 +79,12 @@ const createChatRoom = async (req: Request, res: Response) => {
       // const recievingUserData = await getUserDataById(receiverId);
       // CALL FUNCTION WITH USER FCM
       // sendNotificationToUser({arrayOfFcm: recievingUserData.fcmTokens,inboxId:inboxID,message:message})
-    }
 
-    // logic to emit socket event about the new group chat added to the participants
-    // newChatRoom?.members?.forEach((member: string) => {
-    //   // don't emit the event for the logged in use as he is the one who is initiating the chat
-    //   if (member === createdBy) return;
-    //   // emit event to other participants with new chat as a payload
-    //   emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
-    // });
+      // console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
+      // logic to emit socket event about the new group chat added to the participants
+      // emit event to other participants with new chast as a payload
+      emitSocketEvent(req, member, ChatEventEnum.NEW_CHAT_EVENT, updatedChatRoom);
+    }
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: newChatRoom });
   } catch (error) {
     console.log("🚀 ~ createGroupChat ~ error:", error);
