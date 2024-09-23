@@ -40,7 +40,30 @@ const sendMessage = async (req: Request, res: Response) => {
     console.log("🚀 ~ sendMessage ~ newMessage:", newMessage);
 
     // update the chat's last message which could be utilized to show last message in the list item
-    await ChatRoom.findByIdAndUpdate(chatRoomId, { lastMessage: newMessage._id });
+    // Update the chat's last message and return the updated document
+    const updatedChatRoom = await ChatRoom.findByIdAndUpdate(
+      chatRoomId,
+      { lastMessage: newMessage._id },
+      { new: true, runValidators: true },
+    )
+      .populate({
+        path: "members",
+        select: "name nickName profileImage email",
+      })
+      .populate({
+        path: "lastMessage",
+        select: "text messageType",
+      });
+    // // getting chat room
+    // const chatRoom = await ChatRoom.findById(newChatRoom?._id)
+    //   .populate({
+    //     path: "members",
+    //     select: "name nickName profileImage email",
+    //   })
+    //   .populate({
+    //     path: "lastMessage",
+    //     select: "text messageType",
+    //   });
 
     // updating user unread count
     // const updateInbox = await Inbox.findOneAndUpdate(
@@ -61,6 +84,7 @@ const sendMessage = async (req: Request, res: Response) => {
         name: memberData?.name,
         profileImage: memberData?.profileImage,
       },
+      chatRoom: updatedChatRoom,
     };
     console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
     // logic to emit socket event about the new message created to the other participants
