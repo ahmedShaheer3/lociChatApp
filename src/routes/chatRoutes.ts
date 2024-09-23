@@ -6,8 +6,8 @@ import {
   getChatMessages,
   getUserChatRooms,
   resetUnreadCount,
-} from "../controllers/chatRoom.controller";
-import { deleteMessage, deleteUserMessages, editMessage, sendMessage } from "../controllers/chatMessages.controller";
+} from "../controllers/chatRoom.Controller";
+import { deleteMessage, deleteUserMessages, editMessage, sendMessage } from "../controllers/chatMessages.Controller";
 import {
   addNewMembersInGroupChat,
   createGroupChat,
@@ -16,10 +16,6 @@ import {
   removeMembersInGroupChat,
   updateGroupDetails,
 } from "../controllers/groupChatRoom.controller";
-
-// import { checkSchemaError } from "../middleware/validations";
-// import { createUserSchema, updateUserFcmSchema, updateUserSchema } from "../middleware/schemas/requestSchemas";
-// import { apiAuthorizer, updateApiAuthorizer } from "../middleware/authorization";
 
 // DEFINE EXPRESS ROUTE
 const router = express.Router();
