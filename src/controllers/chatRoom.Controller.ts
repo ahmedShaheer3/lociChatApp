@@ -77,9 +77,6 @@ const createChatRoom = async (req: Request, res: Response) => {
           path: "lastMessage",
           select: "text messageType",
         });
-      // logic to emit socket event about the new chat added to the participants
-      // emit event to other participants with new chat as a payload
-      // emitSocketEvent(req, participant._id?.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload);
       // UPDATE LAST MESSAGE AND UNREAD COUNT OF CONVO IN CHAT
       // const updateInbox = await updateInboxById(inboxID, {lastMessage: message});
       // const recievingUserData = await getUserDataById(receiverId);
@@ -88,7 +85,6 @@ const createChatRoom = async (req: Request, res: Response) => {
 
       // console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
       // logic to emit socket event about the new group chat added to the participants
-      // emit event to other participants with new chast as a payload
       emitSocketEvent(req, member, ChatEventEnum.NEW_CHAT_EVENT, chatRoom);
     }
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: newChatRoom });
@@ -109,23 +105,6 @@ const getUserChatRooms = async (req: Request, res: Response) => {
   const limit = parseInt(req.query.limit as string) || 5;
 
   try {
-    // // PIPELINE FOR GET INBOX OF USERS
-    // const getUserInboxPipeline = chatAggregations.getUserInbox(userId as string);
-    // console.log("🚀 ~ getUserChatRooms ~ getUserInboxPipeline:", getUserInboxPipeline);
-
-    // CALL AGGREGATION METHOD ON INBOX TABLE
-    // const chats = await ChatRoom.aggregate([
-    //   {
-    //     $match: {
-    //       members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
-    //     },
-    //   },
-    //   {
-    //     $sort: {
-    //       updatedAt: -1,
-    //     },
-    //   },
-    // ]);
     // getting total counts
     const totalChatRooms = await ChatRoom.countDocuments({
       members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
