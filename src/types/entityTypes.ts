@@ -24,6 +24,7 @@ export interface UserType {
   createdAt?: Date;
   updatedAt?: Date;
   blockedUsers: Types.ObjectId[];
+  onlineStatus: boolean;
 }
 
 export interface chatRoomType {

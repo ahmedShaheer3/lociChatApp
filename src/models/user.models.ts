@@ -7,7 +7,6 @@ const socialTokenSchema = new Schema({
   socialId: { type: String, required: true },
   socialPlatform: { type: String, required: true },
 });
-
 /*
  ** fcm token schema
  */
@@ -41,7 +40,7 @@ const userSchema = new Schema<UserType>(
       min: 0,
     },
     name: { type: String, default: "" },
-    nickName: { type: String, default: "" },
+    nickName: { type: String, default: "", unique: true, index: true },
 
     followerCount: {
       type: Number,
@@ -103,8 +102,11 @@ const userSchema = new Schema<UserType>(
       default: 0,
       min: 0,
     },
+    onlineStatus: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
-
 export const Users = mongoose.model("Users", userSchema);
