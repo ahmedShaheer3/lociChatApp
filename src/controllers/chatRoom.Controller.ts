@@ -69,10 +69,19 @@ const createChatRoom = async (req: Request, res: Response) => {
         messageType,
         media,
       });
+      // TODO: handle it properly read/unread flow
+
+      // updating unread count
+      await ChatRoom.updateOne(
+        { _id: newChatRoom?._id, "unreadUserCount.memberId": member },
+        { $inc: { "unreadUserCount.$.count": 1 } },
+      );
       // update the chat's last message which could be utilized to show last message in the list item
-      await ChatRoom.findByIdAndUpdate(newChatRoom?._id, { lastMessage: newMessage._id });
-      // getting chat room
-      const chatRoom = await ChatRoom.findById(newChatRoom?._id)
+      const chatRoom = await ChatRoom.findByIdAndUpdate(
+        newChatRoom?._id,
+        { lastMessage: newMessage._id },
+        { new: true, runValidators: true },
+      )
         .populate({
           path: "members",
           select: "name nickName profileImage email",
@@ -81,6 +90,17 @@ const createChatRoom = async (req: Request, res: Response) => {
           path: "lastMessage",
           select: "text messageType",
         });
+
+      // getting chat room
+      // const chatRoom = await ChatRoom.findById(newChatRoom?._id)
+      //   .populate({
+      //     path: "members",
+      //     select: "name nickName profileImage email",
+      //   })
+      //   .populate({
+      //     path: "lastMessage",
+      //     select: "text messageType",
+      //   });
       // UPDATE LAST MESSAGE AND UNREAD COUNT OF CONVO IN CHAT
       // const updateInbox = await updateInboxById(inboxID, {lastMessage: message});
       // const recievingUserData = await getUserDataById(receiverId);
