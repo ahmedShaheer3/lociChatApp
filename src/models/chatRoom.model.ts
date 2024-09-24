@@ -24,6 +24,14 @@ const chatRoomSchema = new Schema<chatRoomType>(
         message: "A chat room cannot have more than 20 members.",
       },
     },
+    unreadUserCount: {
+      type: [
+        {
+          memberId: { type: Schema.Types.ObjectId, ref: "Users" },
+          count: { type: Number, default: 0 },
+        },
+      ],
+    },
     admins: {
       type: [Schema.Types.ObjectId],
       ref: "Users",

@@ -152,11 +152,15 @@ const resetUnreadCount = async (req: Request, res: Response) => {
   const { chatRoomId, memeberId } = req.params;
 
   try {
+    // checking if roo exits or not
+    const chatRoomData = await ChatRoom.findById(chatRoomId);
+    if (!chatRoomData) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Chat room not found" });
+    }
     // UPDATE unread count on chat
     const updateInbox = await ChatRoom.findOneAndUpdate(
-      { _id: chatRoomId, "members.userId": memeberId },
-      { $set: { "members.$.unreadMsgCount": 0 } },
-      { new: true, runValidators: true },
+      { _id: chatRoomId, "unreadUserCount.memberId": memeberId },
+      { $inc: { "unreadUserCount.$.count": 0 } },
     );
 
     console.log("🚀 ~ resetUnreadCount ~ updateInbox:", updateInbox);

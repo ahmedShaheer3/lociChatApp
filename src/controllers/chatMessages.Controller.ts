@@ -54,17 +54,6 @@ const sendMessage = async (req: Request, res: Response) => {
         path: "lastMessage",
         select: "text messageType",
       });
-    // // getting chat room
-    // const chatRoom = await ChatRoom.findById(newChatRoom?._id)
-    //   .populate({
-    //     path: "members",
-    //     select: "name nickName profileImage email",
-    //   })
-    //   .populate({
-    //     path: "lastMessage",
-    //     select: "text messageType",
-    //   });
-
     // updating user unread count
     // const updateInbox = await Inbox.findOneAndUpdate(
     //   { _id: inboxID, "users.userId": receiverId },
@@ -87,6 +76,7 @@ const sendMessage = async (req: Request, res: Response) => {
       chatRoom: updatedChatRoom,
     };
     console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
+
     // logic to emit socket event about the new message created to the other participants
     chatRoomData.members.forEach((participantObjectId) => {
       // here the chat is the raw instance of the chat in which participants is the array of object ids of users
@@ -96,6 +86,17 @@ const sendMessage = async (req: Request, res: Response) => {
       // emit the receive message event to the other participants with received message as the payload
       emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE, messageWithUserData);
     });
+    // Update unread count for all members except the sender
+    const unreadUpdates = chatRoomData.members.map(async (member) => {
+      // avoid updating unread count for the sender memeber
+      if (member.toString() === memberId) return;
+      // update the unread count for the member in the chat room database
+      await ChatRoom.findOneAndUpdate(
+        { _id: chatRoomId, "unreadUserCount.memberId": member },
+        { $inc: { "unreadUserCount.$.count": 1 } },
+      );
+    });
+    await Promise.all(unreadUpdates);
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: newMessage });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);

@@ -32,6 +32,10 @@ export interface chatRoomType {
   readonly createdBy: Types.ObjectId;
   admins: Types.ObjectId[];
   members: Types.ObjectId[];
+  unreadUserCount: {
+    memberId: Types.ObjectId;
+    count: number;
+  }[];
   isGroupChat: boolean;
   lastMessage: Types.ObjectId;
   roomName?: string;
