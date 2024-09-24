@@ -38,7 +38,17 @@ const sendMessage = async (req: Request, res: Response) => {
       media,
     });
     console.log("🚀 ~ sendMessage ~ newMessage:", newMessage);
-
+    // Update unread count for all members except the sender
+    const unreadUpdates = chatRoomData.members.map(async (member) => {
+      // avoid updating unread count for the sender memeber
+      if (member.toString() === memberId) return;
+      // update the unread count for the member in the chat room database
+      await ChatRoom.findOneAndUpdate(
+        { _id: chatRoomId, "unreadUserCount.memberId": member },
+        { $inc: { "unreadUserCount.$.count": 1 } },
+      );
+    });
+    await Promise.all(unreadUpdates);
     // update the chat's last message which could be utilized to show last message in the list item
     // Update the chat's last message and return the updated document
     const updatedChatRoom = await ChatRoom.findByIdAndUpdate(
@@ -86,18 +96,8 @@ const sendMessage = async (req: Request, res: Response) => {
       // emit the receive message event to the other participants with received message as the payload
       emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE, messageWithUserData);
     });
-    // Update unread count for all members except the sender
-    const unreadUpdates = chatRoomData.members.map(async (member) => {
-      // avoid updating unread count for the sender memeber
-      if (member.toString() === memberId) return;
-      // update the unread count for the member in the chat room database
-      await ChatRoom.findOneAndUpdate(
-        { _id: chatRoomId, "unreadUserCount.memberId": member },
-        { $inc: { "unreadUserCount.$.count": 1 } },
-      );
-    });
-    await Promise.all(unreadUpdates);
-    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: newMessage });
+
+    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: updatedChatRoom });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);
     /*

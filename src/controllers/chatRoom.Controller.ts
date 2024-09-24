@@ -53,6 +53,10 @@ const createChatRoom = async (req: Request, res: Response) => {
       isGroupChat: false,
       admins: [createdBy],
       members: [member, createdBy],
+      unreadUserCount: [
+        { memberId: member, count: 0 },
+        { memberId: createdBy, count: 0 },
+      ],
       createdBy,
     });
     console.log("🚀 ~ createChatRoom ~ newChatRoom:", newChatRoom);
