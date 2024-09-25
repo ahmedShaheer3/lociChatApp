@@ -2,6 +2,7 @@ import { Request } from "express";
 import { ChatEventEnum } from "../config";
 import { Server as SocketIOServer, Socket } from "socket.io";
 import { socketUserType } from "../types/appTypes";
+import { Users } from "../models/user.models";
 /*
  ** Registering to an event so can user can joing chat rooms
  */
@@ -51,13 +52,22 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
       console.log("New user connected", socket.id);
 
       // Handle user connection and store socket ID
-      socket.on(ChatEventEnum.CONNECTED_EVENT, ({ userId, name, nickName }: socketUserType) => {
+      socket.on(ChatEventEnum.CONNECTED_EVENT, async ({ userId, name, nickName }: socketUserType) => {
         console.log("🚀 ~ socket.on ~ userId:", userId);
+
         socket.data._id = userId;
         socket.data.name = name;
         socket.data.nickName = nickName;
         socket.join(userId);
         socket.emit(ChatEventEnum.SERVER_MESSAGE, "You have connected to server and ready to go. !!!!!");
+        try {
+          await Users.findByIdAndUpdate(userId, {
+            onlineStatus: true,
+          });
+        } catch (error) {
+          console.log("🚀 ~ socket.on ~ error Unable to upate user online status:", error);
+        }
+
         console.log(`User ${userId} connected with socket ID: ${socket.id}`);
       });
 
@@ -86,10 +96,17 @@ const initializeSocketIO = (ioClient: SocketIOServer) => {
       });
 
       // Handle user disconnect
-      socket.on(ChatEventEnum.DISCONNECT_EVENT, () => {
+      socket.on(ChatEventEnum.DISCONNECT_EVENT, async () => {
         console.log("Client disconnected", socket.id);
         if (socket.data?._id) {
           socket.leave(socket.data._id);
+        }
+        try {
+          await Users.findByIdAndUpdate(socket.data._id, {
+            onlineStatus: true,
+          });
+        } catch (error) {
+          console.log("🚀 ~ socket.on ~ error Unable to upate user online status:", error);
         }
       });
     } catch (error: unknown) {
