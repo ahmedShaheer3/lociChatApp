@@ -15,9 +15,9 @@ import {
   leaveChatRoom,
   removeMembersInGroupChat,
   updateGroupDetails,
-} from "../controllers/groupChatRoom.Controller";
+} from "../controllers/groupChatRoom.controller";
 
-// DEFINE EXPRESS ROUTE
+// DEFINE EXPRESS ROUTEs
 const router = express.Router();
 /*
  ** CHAT ROUTES

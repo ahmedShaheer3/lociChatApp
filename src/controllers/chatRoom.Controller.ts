@@ -92,18 +92,6 @@ const createChatRoom = async (req: Request, res: Response) => {
         });
 
       // getting chat room
-      // const chatRoom = await ChatRoom.findById(newChatRoom?._id)
-      //   .populate({
-      //     path: "members",
-      //     select: "name nickName profileImage email",
-      //   })
-      //   .populate({
-      //     path: "lastMessage",
-      //     select: "text messageType",
-      //   });
-      // UPDATE LAST MESSAGE AND UNREAD COUNT OF CONVO IN CHAT
-      // const updateInbox = await updateInboxById(inboxID, {lastMessage: message});
-      // const recievingUserData = await getUserDataById(receiverId);
       // CALL FUNCTION WITH USER FCM
       // sendNotificationToUser({arrayOfFcm: recievingUserData.fcmTokens,inboxId:inboxID,message:message})
 
@@ -173,7 +161,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
  ** Reseting chatRoom unread count
  */
 const resetUnreadCount = async (req: Request, res: Response) => {
-  const { chatRoomId, memeberId } = req.params;
+  const { chatRoomId, memberId } = req.params;
 
   try {
     // checking if roo exits or not
@@ -183,9 +171,18 @@ const resetUnreadCount = async (req: Request, res: Response) => {
     }
     // UPDATE unread count on chat
     const updateInbox = await ChatRoom.findOneAndUpdate(
-      { _id: chatRoomId, "unreadUserCount.memberId": memeberId },
-      { $inc: { "unreadUserCount.$.count": 0 } },
-    );
+      { _id: chatRoomId, "unreadUserCount.memberId": memberId },
+      { $set: { "unreadUserCount.$.count": 0 } },
+      { new: true, runValidators: true, timestamps: false },
+    )
+      .populate({
+        path: "members",
+        select: "name nickName profileImage email",
+      })
+      .populate({
+        path: "lastMessage",
+        select: "text messageType",
+      });
 
     console.log("🚀 ~ resetUnreadCount ~ updateInbox:", updateInbox);
 
