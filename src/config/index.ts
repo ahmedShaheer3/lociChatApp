@@ -43,6 +43,8 @@ export const ChatEventEnum = Object.freeze({
   SOCKET_ERROR_EVENT: "socketError",
   // ? when participant stops typing
   STOP_TYPING_EVENT: "stopTyping",
+  // ? when participant get online
+  USER_ONLINE_STATUS_EVENT: "userOnlineStatus",
   // ? when participant starts typing
   START_TYPING_EVENT: "startTyping",
   // ? when message is deleted

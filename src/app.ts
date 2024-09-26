@@ -78,3 +78,4 @@ export { httpServer };
 // TODO: UNread count
 // TODO: online/offline status
 // TODO: optamise read/unread count
+// TODO: last seen status

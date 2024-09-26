@@ -24,6 +24,7 @@ export interface UserType {
   createdAt?: Date;
   updatedAt?: Date;
   blockedUsers: Types.ObjectId[];
+  lastSeenAt?: Date;
   onlineStatus: boolean;
 }
 

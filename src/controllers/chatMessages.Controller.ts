@@ -64,16 +64,6 @@ const sendMessage = async (req: Request, res: Response) => {
         path: "lastMessage",
         select: "text messageType",
       });
-    // updating user unread count
-    // const updateInbox = await Inbox.findOneAndUpdate(
-    //   { _id: inboxID, "users.userId": receiverId },
-    //   {
-    //     $inc: { "users.$.unreadMsgCount": 1 },
-    //     lastMessage: message,
-    //     lastMessageTimestamp: messageData.createdAt,
-    //   },
-    //   { new: true },
-    // );
     // refactoring messaging
     // Add the user data to the message response manually
     const messageWithUserData = {
