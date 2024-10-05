@@ -2,9 +2,7 @@ import express, { Express, Request, Response, json, urlencoded } from "express";
 import { Server as SocketServer } from "socket.io";
 import cors from "cors";
 import { createServer } from "http";
-
 import chatApis from "./routes/chatRoutes";
-
 import logger from "./utils/logger";
 import morgan from "morgan";
 import { initializeSocketIO } from "./socket";
@@ -17,9 +15,10 @@ const morganFormat = ":method :url :status :response-time ms";
  */
 app.use(cors());
 app.use(json());
-
 app.use(urlencoded({ limit: "100mb", extended: true, parameterLimit: 50000 }));
-
+/*
+ ** logging format
+ */
 app.use(
   morgan(morganFormat, {
     stream: {
@@ -36,6 +35,9 @@ app.use(
     },
   }),
 );
+/*
+ ** Socket server
+ */
 const ioClient = new SocketServer(httpServer, {
   pingTimeout: 60000,
   connectionStateRecovery: {},
@@ -52,14 +54,15 @@ app.get("/", (req: Request, res: Response) => {
 });
 /*
  ** Routers
- *
  */
 app.use("/api/v1/chat", chatApis);
-
-// Socket clinet initialer
+/*
+ ** Socket client initializer
+ */
 initializeSocketIO(ioClient);
-
-// middleware to return response of URL NOT FOUND
+/*
+ ** Middleware to return response of URL NOT FOUND
+ */
 app.use((req: Request, res: Response) => {
   console.log("🚀 ~ app.use ~ res:", res);
   console.log("🚀 ~ app.use ~ req:", req);
