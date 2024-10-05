@@ -75,6 +75,5 @@ export { httpServer };
 // TODO: real time chat app
 // TODO: group chat
 // TODO: logging solutions
-// TODO: UNread count
 // TODO: online/offline status
 // TODO: optamise read/unread count
