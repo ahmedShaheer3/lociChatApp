@@ -6,6 +6,7 @@ import {
   getChatMessages,
   getUserChatRooms,
   resetUnreadCount,
+  updateUserOnlineStatus,
 } from "../controllers/chatRoom.Controller";
 import { deleteMessage, deleteUserMessages, editMessage, sendMessage } from "../controllers/chatMessages.Controller";
 import {
@@ -15,7 +16,7 @@ import {
   leaveChatRoom,
   removeMembersInGroupChat,
   updateGroupDetails,
-} from "../controllers/groupChatRoom.controller";
+} from "../controllers/groupChatRoom.Controller";
 
 // DEFINE EXPRESS ROUTEs
 const router = express.Router();
@@ -30,6 +31,7 @@ router.route("/user-messages/:chatRoomId/:memberId").delete(deleteUserMessages);
 router.route("/count/:chatRoomId/:memberId").patch(resetUnreadCount);
 router.route("/messages/:chatRoomId/:memberId").get(getChatMessages);
 router.route("/:chatRoomId/:memberId").delete(deleteChatRoom);
+router.route("/online-status/:memberId").patch(updateUserOnlineStatus);
 /*
  ** Group Chat Room Routes
  *

@@ -106,6 +106,10 @@ const userSchema = new Schema<UserType>(
       type: Boolean,
       default: false,
     },
+    lastSeenAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

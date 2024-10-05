@@ -109,6 +109,39 @@ const createChatRoom = async (req: Request, res: Response) => {
   }
 };
 /*
+ ** Controller for updating user online status
+ */
+const updateUserOnlineStatus = async (req: Request, res: Response) => {
+  const memberId = req.params.memberId;
+  const { onlineStatus } = req.body;
+
+  try {
+    // Update the user's online status in the database
+    await Users.findByIdAndUpdate(memberId, { onlineStatus });
+
+    // Get the list of chat rooms the user is currently a member of
+    const chatRooms = await ChatRoom.find({ members: memberId });
+
+    // Emit online status change event to all rooms the user is a member of
+    chatRooms.forEach((room) => {
+      emitSocketEvent(req, room._id.toString(), ChatEventEnum.USER_ONLINE_STATUS_EVENT, {
+        memberId,
+        chatId: room?._id,
+        onlineStatus: onlineStatus === "ONLINE" ? true : false,
+      });
+    });
+
+    return res.status(STATUS_CODE.SUCCESS).json({ success: true, message: "Status updated and events emitted." });
+  } catch (error) {
+    console.log("🚀 ~ updateUserStatus ~ error:", error);
+    /*
+     ** Formated Error
+     */
+    return formatedError(res, error);
+  }
+};
+
+/*
  ** Getting user all chat rooms
  */
 const getUserChatRooms = async (req: Request, res: Response) => {
@@ -335,4 +368,5 @@ export {
   createChatRoom,
   deleteChatRoom,
   getChatByChatId,
+  updateUserOnlineStatus,
 };
