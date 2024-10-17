@@ -167,7 +167,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
       })
       .populate({
         path: "lastMessage",
-        select: "text messageType",
+        select: "text messageType createdAt",
       })
       .skip((page - 1) * limit)
       .limit(limit);
