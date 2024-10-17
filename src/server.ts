@@ -10,12 +10,12 @@ configDotenv({
 import { httpServer } from "./app";
 import { connectToDatabase } from "./database";
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 443;
 
 connectToDatabase()
   .then(() => {
     httpServer.listen(port, () => {
-      console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
+      console.log(`⚙️ Server is running at port : ${port}`);
     });
   })
   .catch((err) => {
