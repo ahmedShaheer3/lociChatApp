@@ -97,6 +97,84 @@ const sendMessage = async (req: Request, res: Response) => {
   }
 };
 /*
+ ** SendMessage to bulk users
+ */
+// const sendMessageBulk = async (req: Request, res: Response) => {
+//   const { memberId, text, messageType, media, members = [] } = req.body;
+
+//   try {
+//     const memberData = await Users.findById(memberId);
+//     if (!memberData) {
+//       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "Member not found" });
+//     }
+
+//     const newMessage = await ChatMessage.create({
+//       chatRoom: chatRoomId,
+//       user: memberId,
+//       text,
+//       messageType,
+//       media,
+//     });
+//     console.log("🚀 ~ sendMessage ~ newMessage:", newMessage);
+//     // Update unread count for all members except the sender
+//     const unreadUpdates = chatRoomData.members.map(async (member) => {
+//       // avoid updating unread count for the sender memeber
+//       if (member.toString() === memberId) return;
+//       // update the unread count for the member in the chat room database
+//       await ChatRoom.findOneAndUpdate(
+//         { _id: chatRoomId, "unreadUserCount.memberId": member },
+//         { $inc: { "unreadUserCount.$.count": 1 } },
+//       );
+//     });
+//     await Promise.all(unreadUpdates);
+//     // update the chat's last message which could be utilized to show last message in the list item
+//     // Update the chat's last message and return the updated document
+//     const updatedChatRoom = await ChatRoom.findByIdAndUpdate(
+//       chatRoomId,
+//       { lastMessage: newMessage._id },
+//       { new: true, runValidators: true },
+//     )
+//       .populate({
+//         path: "members",
+//         select: "name nickName profileImage email",
+//       })
+//       .populate({
+//         path: "lastMessage",
+//         select: "text messageType",
+//       });
+//     // refactoring messaging
+//     // Add the user data to the message response manually
+//     const messageWithUserData = {
+//       ...newMessage?.toObject(),
+//       user: {
+//         _id: memberData?._id,
+//         name: memberData?.name,
+//         profileImage: memberData?.profileImage,
+//       },
+//       chatRoom: updatedChatRoom,
+//     };
+//     console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
+
+//     // logic to emit socket event about the new message created to the other participants
+//     chatRoomData.members.forEach((participantObjectId) => {
+//       // here the chat is the raw instance of the chat in which participants is the array of object ids of users
+//       // avoid emitting event to the user who is sending the message
+//       if (participantObjectId.toString() === memberId) return;
+
+//       // emit the receive message event to the other participants with received message as the payload
+//       emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE, messageWithUserData);
+//     });
+
+//     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: updatedChatRoom });
+//   } catch (error) {
+//     console.log("🚀 ~ getChatMessages ~ error:", error);
+//     /*
+//      ** Formated Error
+//      */
+//     return formatedError(res, error);
+//   }
+// };
+/*
  ** delete message to chat room
  */
 const deleteMessage = async (req: Request, res: Response) => {
