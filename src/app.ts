@@ -41,7 +41,6 @@ app.use(
 const ioClient = new SocketServer(httpServer, {
   pingTimeout: 60000,
   connectionStateRecovery: {},
-  transports: ["websocket"],
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
