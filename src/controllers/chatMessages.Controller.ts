@@ -6,6 +6,7 @@ import mongoose, { Types } from "mongoose";
 import { ChatMessage } from "../models/chatMessage.model";
 import { emitSocketEvent } from "../socket";
 import { Users } from "../models/user.models";
+import logger from "../utils/logger";
 
 /*
  ** sendMessage to chat room
@@ -87,9 +88,10 @@ const sendMessage = async (req: Request, res: Response) => {
       emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE, messageWithUserData);
     });
 
-    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: updatedChatRoom });
+    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: newMessage });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);
+    logger.error("Unable to send message", error);
     /*
      ** Formated Error
      */
@@ -221,6 +223,7 @@ const deleteMessage = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: "Message deleted successfully" });
   } catch (error) {
     console.log("🚀 ~ deleteMessage ~ error:", error);
+    logger.error("Unable to delete message:", error);
     /*
      ** Formated Error
      */
@@ -264,6 +267,7 @@ const editMessage = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: updatedMsg });
   } catch (error) {
     console.log("🚀 ~ deleteMessage ~ error:", error);
+    logger.error("Unable to edit message:", error);
     /*
      ** Formated Error
      */
@@ -309,6 +313,7 @@ const addReaction = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: "Message deleted successfully" });
   } catch (error) {
     console.log("🚀 ~ deleteMessage ~ error:", error);
+    logger.error("Unable to add reaction:", error);
     /*
      ** Formated Error
      */
@@ -351,6 +356,7 @@ const deleteUserMessages = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: "Message deleted successfully" });
   } catch (error) {
     console.log("🚀 ~ deleteMessage ~ error:", error);
+    logger.error("Unable to delete user all messages:", error);
     /*
      ** Formated Error
      */

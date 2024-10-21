@@ -7,6 +7,7 @@ import { Users } from "../models/user.models";
 import { ChatEventEnum, STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
 import { emitSocketEvent } from "../socket";
+import { Connections } from "../models/connection.model";
 // import { emitSocketEvent } from "../socket";
 /*
  ** Creating a one to one chat room
@@ -34,6 +35,20 @@ const createChatRoom = async (req: Request, res: Response) => {
     const memberData = await Users.findOne({ _id: member });
     if (!memberData) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ success: false, message: "member not found" });
+    }
+    // validation that user can only message to its following user only
+    if (memberData?.privacyStatus === "PRIVATE") {
+      // checking if there is a request regarding this account
+      const connection = await Connections.findOne({
+        followingId: member,
+        followerId: createdBy,
+        connectionStatus: "ACCEPTED",
+      });
+      if (!connection) {
+        return res
+          .status(STATUS_CODE.CONFLICT_DATA)
+          .json({ success: true, message: "You can only message to you following" });
+      }
     }
 
     // checking if chat room is already created by these two participant
@@ -102,6 +117,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: newChatRoom });
   } catch (error) {
     console.log("🚀 ~ createGroupChat ~ error:", error);
+    logger.error("Error creating chat room:", error);
     /*
      ** Formated Error
      */
@@ -134,6 +150,7 @@ const updateUserOnlineStatus = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.SUCCESS).json({ success: true, message: "Status updated and events emitted." });
   } catch (error) {
     console.log("🚀 ~ updateUserStatus ~ error:", error);
+    logger.error("Unable to update user status:", error);
     /*
      ** Formated Error
      */
@@ -154,10 +171,8 @@ const getUserChatRooms = async (req: Request, res: Response) => {
     const totalChatRooms = await ChatRoom.countDocuments({
       members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } },
     });
-    console.log("🚀 ~ getUserChatRooms ~ totalChatRooms:", totalChatRooms);
     // getting total pages according to limit provided
     const totalPages = Math.ceil(totalChatRooms / limit);
-    console.log("🚀 ~ getUserChatRooms ~ totalPages:", totalPages);
     // getting all user chat box
     const chats = await ChatRoom.find({ members: { $elemMatch: { $eq: new Types.ObjectId(userId as string) } } })
       .sort({ updatedAt: -1 })
@@ -171,7 +186,6 @@ const getUserChatRooms = async (req: Request, res: Response) => {
       })
       .skip((page - 1) * limit)
       .limit(limit);
-    console.log("🚀 ~ getUserChatRooms ~ chats:", chats);
 
     return res.status(200).json({
       success: true,
@@ -183,7 +197,7 @@ const getUserChatRooms = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    logger.error("Error getting user inbox:", error);
+    logger.error("Unable to get user chat rooms:", error);
     /*
      ** Formated Error
      */
@@ -222,7 +236,7 @@ const resetUnreadCount = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, data: updateInbox });
   } catch (error) {
     // PRINT ERROR LOGS
-    logger.error("error resetting unread count", error);
+    logger.error("Unable to reset unread count", error);
 
     return res.status(400).json({ error: true, message: "Error resetting unread count" });
   }
@@ -245,7 +259,7 @@ const getChatByUserIds = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, data: isChatRoom });
   } catch (error) {
     // PRINT ERROR LOGS
-    logger.error("error getting inboxId by user ids", error);
+    logger.error("unable to get chat by user ids", error);
 
     return res.status(400).json({ error: true, message: "Unable to get chat room" });
   }
@@ -263,7 +277,7 @@ const getChatByChatId = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, data: chatRoom });
   } catch (error) {
     // PRINT ERROR LOGS
-    logger.error("get chat by chat id", error);
+    logger.error("unbale to get chat by chat id", error);
 
     return res.status(400).json({ error: true, message: "Error getting inboxId" });
   }
@@ -310,7 +324,7 @@ const getChatMessages = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);
-    logger.error("Error getting chatroom messages:", error);
+    logger.error("Unable to get chat messages:", error);
     /*
      ** Formated Error
      */
@@ -353,6 +367,7 @@ const deleteChatRoom = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
   } catch (error) {
     console.log("🚀 ~ deleteGroupChat ~ error:", error);
+    logger.error("Unable to delete chat room:", error);
     /*
      ** Formated Error
      */

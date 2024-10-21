@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 export interface FcmTokenType {
   deviceId: string;
   fcmToken: string;
@@ -42,3 +44,12 @@ export type socketUserType = {
   name?: string;
   chatId?: string;
 };
+
+export interface connectionType {
+  readonly _id?: string;
+  readonly followingId: Types.ObjectId;
+  readonly followerId: Types.ObjectId;
+  connectionStatus: connectionStatusType;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

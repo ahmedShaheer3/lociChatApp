@@ -23,7 +23,6 @@ app.use(
   morgan(morganFormat, {
     stream: {
       write: (message) => {
-        console.log("🚀 ~ message:", message);
         const logObject = {
           method: message.split(" ")[0],
           url: message.split(" ")[1],
@@ -80,3 +79,4 @@ export { httpServer };
 // TODO: online/offline status
 // TODO: optamise read/unread count
 // TODO: last seen status
+// TODO: rate limiting

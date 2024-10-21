@@ -5,6 +5,7 @@ import { formatedError } from "../utils/formatedError";
 import { Users } from "../models/user.models";
 import { STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
+import logger from "../utils/logger";
 /*
  ** Creating a group chat
  */
@@ -52,6 +53,7 @@ const createGroupChat = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: false, data: groupChat });
   } catch (error) {
     console.log("🚀 ~ createGroupChat ~ error:", error);
+    logger.error("Error getting user inbox:", error);
     /*
      ** Formated Error
      */
@@ -90,6 +92,7 @@ const updateGroupDetails = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: updatedRoom });
   } catch (error) {
     console.log("🚀 ~ changingGroupName ~ error:", error);
+    logger.error("Error getting user inbox:", error);
     /*
      ** Formated Error
      */
@@ -135,6 +138,7 @@ const leaveChatRoom = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Left a group successfully" });
   } catch (error) {
     console.log("🚀 ~ leaveGroupChat ~ error:", error);
+    logger.error("Error getting user inbox:", error);
     /*
      ** Formated Error
      */
@@ -182,6 +186,7 @@ const addNewMembersInGroupChat = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: updatedChat });
   } catch (error) {
     console.log("🚀 ~ addNewMembersInGroupChat ~ error:", error);
+    logger.error("Error getting user inbox:", error);
     /*
      ** Formated Error
      */
@@ -226,6 +231,7 @@ const removeMembersInGroupChat = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, data: updatedChat });
   } catch (error) {
     console.log("🚀 ~ leaveGroupChat ~ error:", error);
+    logger.error("Error getting user inbox:", error);
     /*
      ** Formated Error
      */
@@ -256,6 +262,7 @@ const deleteGroupChat = async (req: Request, res: Response) => {
     return res.status(STATUS_CODE.CREATED).json({ success: true, message: "Successfully deleted" });
   } catch (error) {
     console.log("🚀 ~ deleteGroupChat ~ error:", error);
+    logger.error("Error getting user inbox:", error);
     /*
      ** Formated Error
      */

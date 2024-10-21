@@ -17,7 +17,17 @@ const logger = createLogger({
     new transports.Console({
       format: consoleLogFormat,
     }),
+    new transports.File({ filename: "app.log" }),
   ],
 });
+
+// if node is not in production
+if (process.env.NODE_ENV !== "production") {
+  logger.add(
+    new transports.Console({
+      format: format.simple(),
+    }),
+  );
+}
 
 export default logger;
