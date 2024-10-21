@@ -87,8 +87,10 @@ const sendMessage = async (req: Request, res: Response) => {
       // emit the receive message event to the other participants with received message as the payload
       emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE, messageWithUserData);
     });
-
-    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: newMessage });
+    if (messageWithUserData.chatRoom) {
+      messageWithUserData.chatRoom = null;
+    }
+    return res.status(STATUS_CODE.SUCCESS).json({ success: true, data: messageWithUserData });
   } catch (error) {
     console.log("🚀 ~ getChatMessages ~ error:", error);
     logger.error("Unable to send message", error);

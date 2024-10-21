@@ -19,7 +19,7 @@ const createChatRoom = async (req: Request, res: Response) => {
     if (!text && !media) {
       return res
         .status(STATUS_CODE.NOT_ACCEPTABLE)
-        .json({ success: false, message: "Text/Media data required for single chat" });
+        .json({ success: false, message: "Text / Media data required for single chat" });
     }
     // vaidating member and createdBy user
     if (member === createdBy) {

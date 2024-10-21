@@ -6,16 +6,28 @@ import chatApis from "./routes/chatRoutes";
 import logger from "./utils/logger";
 import morgan from "morgan";
 import { initializeSocketIO } from "./socket";
+import { rateLimit } from "express-rate-limit";
 
 const app: Express = express();
 const httpServer = createServer(app);
 const morganFormat = ":method :url :status :response-time ms";
+const limiter = rateLimit({
+  // 1 minutes
+  windowMs: 1 * 60 * 1000,
+  // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  limit: 50,
+  // Return rate limit info in the `RateLimit-*` headers
+  standardHeaders: true,
+  // Disable the `X-RateLimit-*` headers
+  legacyHeaders: false,
+});
 /*
  ** Middlewares
  */
 app.use(cors());
 app.use(json());
 app.use(urlencoded({ limit: "100mb", extended: true, parameterLimit: 50000 }));
+app.use(limiter);
 /*
  ** logging format
  */
@@ -34,6 +46,7 @@ app.use(
     },
   }),
 );
+
 /*
  ** Socket server
  */
