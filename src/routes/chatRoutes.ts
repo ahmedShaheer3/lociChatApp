@@ -8,7 +8,13 @@ import {
   resetUnreadCount,
   updateUserOnlineStatus,
 } from "../controllers/chatRoom.Controller";
-import { deleteMessage, deleteUserMessages, editMessage, sendMessage } from "../controllers/chatMessages.Controller";
+import {
+  deleteMessage,
+  deleteUserMessages,
+  editMessage,
+  sendMessage,
+  sendMessageToUsers,
+} from "../controllers/chatMessages.Controller";
 import {
   addNewMembersInGroupChat,
   createGroupChat,
@@ -46,6 +52,7 @@ router.route("/group/leave").patch(leaveChatRoom);
  ** Messages Routes
  */
 router.route("/message/:chatRoomId").post(sendMessage);
+router.route("/messages").post(sendMessageToUsers);
 router.route("/message/:messageId/:memberId").patch(editMessage);
 router.route("/message/:messageId/:memberId").delete(deleteMessage);
 router.route("/messages/:chatRoomId/:memberId").delete(deleteUserMessages);

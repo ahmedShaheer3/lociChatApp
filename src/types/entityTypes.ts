@@ -50,10 +50,11 @@ export interface chatMessageType {
   readonly _id?: string;
   readonly chatRoom: Types.ObjectId;
   user: Types.ObjectId;
-  messageType: "TEXT" | "IMAGE" | "VIDEO" | "VOICE" | "FILE";
+  messageType: "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" | "FILE";
   audio?: string;
   image?: string;
   video?: string;
+  media?: string;
   text: string;
   createdAt?: Date;
   updatedAt?: Date;
