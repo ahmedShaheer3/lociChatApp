@@ -104,8 +104,7 @@ const sendMessage = async (req: Request, res: Response) => {
  ** SendMessage to bulk users
  */
 const sendMessageToUsers = async (req: Request, res: Response) => {
-  const { members, senderId, text, messageType, audio, video, image } = req.body;
-
+  const { members, senderId, text, messageType, audio, video, image, postId } = req.body;
   try {
     // Validate that members do not exceed 20 users
     if (members.length > 10) {
@@ -169,6 +168,7 @@ const sendMessageToUsers = async (req: Request, res: Response) => {
           audio: audio || undefined,
           video: video || undefined,
           image: image || undefined,
+          postId: postId || undefined,
         });
         console.log("new message is :", newMessage);
 

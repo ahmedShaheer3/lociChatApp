@@ -1,3 +1,4 @@
 node_modules
 .pem
 lociChatAppKey-eu-west-1.pem
+serviceAccountKey.json

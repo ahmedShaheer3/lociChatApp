@@ -22,8 +22,8 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types"],
+    "resolveJsonModule": true
   },
   "ts-node": {
     "compilerOptions": {

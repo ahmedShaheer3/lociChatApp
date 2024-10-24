@@ -29,9 +29,12 @@ const chatMessageSchema = new Schema<chatMessageType>(
     audio: {
       type: String,
     },
+    postId: {
+      type: Schema.Types.ObjectId,
+    },
     messageType: {
       type: String,
-      enum: ["TEXT", "IMAGE", "VIDEO", "VOICE", "FILE"],
+      enum: ["TEXT", "IMAGE", "VIDEO", "AUDIO", "FILE"],
       default: "TEXT",
     },
     edited: {

@@ -8,6 +8,7 @@ import { ChatEventEnum, STATUS_CODE } from "../config";
 import { ChatMessage } from "../models/chatMessage.model";
 import { emitSocketEvent } from "../socket";
 import { Connections } from "../models/connection.model";
+import { commonoUtils } from "../utils";
 // import { emitSocketEvent } from "../socket";
 /*
  ** Creating a one to one chat room
@@ -107,8 +108,12 @@ const createChatRoom = async (req: Request, res: Response) => {
         });
 
       // getting chat room
-      // CALL FUNCTION WITH USER FCM
-      // sendNotificationToUser({arrayOfFcm: recievingUserData.fcmTokens,inboxId:inboxID,message:message})
+      // sending push notifications
+      await commonoUtils.sendPushNotification(memberData, "New message", "Text message", newChatRoom?._id, {
+        username: createrData?.nickName,
+        profileImage: createrData?.profileImage,
+        _id: createrData?._id,
+      });
 
       // console.log("🚀 ~ sendMessage ~ messageWithUserData:", messageWithUserData);
       // logic to emit socket event about the new group chat added to the participants

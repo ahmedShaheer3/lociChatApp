@@ -1,18 +1,19 @@
-import axios from "axios";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import { JwtExpiredError } from "aws-jwt-verify/error";
 import { CognitoAccessTokenPayload } from "aws-jwt-verify/jwt-model";
-import { CLIENT_ID, FCM_SERVER_KEY, FCM_URL, USER_POOL_ID } from "../config";
+import { CLIENT_ID, USER_POOL_ID } from "../config";
+import { messaging } from "firebase-admin";
+import { UserType } from "../types/entityTypes";
 
 export class CommonUtils {
   /*
-   **Get unique array - remove duplicates
+   ** Get unique array - remove duplicates
    */
   uniqueArray = <T>(array: T[]): T[] => {
     return array.filter((v, i, a) => a.indexOf(v) === i);
   };
   /*
-   **Shuffle arrays
+   ** Shuffle arrays
    */
   shuffleArray = <T>(array: T[]): T[] => {
     let currentIndex = array.length;
@@ -62,23 +63,47 @@ export class CommonUtils {
     return retVal;
   };
   /*
-   **Sending push notifications by firbase
+   ** Sending push notifications by firbase
    */
-  sendPushNotification = async (title: string, message: string, token: string) => {
-    const response = await axios({
-      method: "post",
-      url: FCM_URL,
-      data: {
-        notification: { title, body: message },
-        to: token,
-      },
-      headers: {
-        "Content-type": "application/json",
-        Authorization: `Key=${FCM_SERVER_KEY}`,
-      },
-    });
-    console.log("send_push_notification", response);
-    return response;
+  sendPushNotification = async (
+    user: UserType,
+    title: string,
+    body: string,
+    chatRoomId: string,
+    senderData: { username: string; profileImage: string; _id: string },
+  ) => {
+    // Ensure the user exists and has FCM tokens
+    if (user && user.fcmTokens.length > 0) {
+      const fcmTokens = user.fcmTokens.map((token) => token.fcmToken);
+      console.log("🚀 ~ fcmTokens:", fcmTokens);
+
+      // Prepare the notification payload for FCM
+      const message = {
+        notification: {
+          title: title || "You have a new notification",
+          body: body,
+        },
+        // Adding notificationType to custom data
+        // Adding referenceId as string (since it's an ObjectId)
+        data: {
+          notificationType: "CHAT_MESSAGE",
+          chatRoomId: chatRoomId,
+          senderName: senderData?.username,
+          senderImage: senderData?.profileImage,
+          senderId: senderData?._id,
+        },
+        // Send notification to all of the user's registered devices
+        tokens: fcmTokens,
+      };
+
+      // Send notification via Firebase Admin SDK
+      try {
+        const response = await messaging().sendMulticast(message);
+        console.log(`Successfully sent ${response.responses} notifications`);
+      } catch (error) {
+        console.error("Error sending FCM notification:", error);
+      }
+    }
   };
 }
 

@@ -56,6 +56,7 @@ export interface chatMessageType {
   video?: string;
   media?: string;
   text: string;
+  postId?: string;
   createdAt?: Date;
   updatedAt?: Date;
   reactions: string[];

@@ -1,16 +1,23 @@
 import express, { Express, Request, Response, json, urlencoded } from "express";
 import { Server as SocketServer } from "socket.io";
+import { initializeSocketIO } from "./socket";
+import { rateLimit } from "express-rate-limit";
+// import { initializeApp, cert } from "firebase-admin/app";
 import cors from "cors";
 import { createServer } from "http";
 import chatApis from "./routes/chatRoutes";
+// import serviceAccountKey from "./config/serviceAccountKey.json";
 import logger from "./utils/logger";
 import morgan from "morgan";
-import { initializeSocketIO } from "./socket";
-import { rateLimit } from "express-rate-limit";
 
 const app: Express = express();
 const httpServer = createServer(app);
 const morganFormat = ":method :url :status :response-time ms";
+
+// const firebaseApp = initializeApp({
+//   credential: cert(serviceAccountKey as unknown as string),
+// });
+
 const limiter = rateLimit({
   // 1 minutes
   windowMs: 1 * 60 * 1000,
@@ -60,6 +67,8 @@ const ioClient = new SocketServer(httpServer, {
 });
 
 app.set("ioClient", ioClient);
+// app.set("firebaseClient", firebaseApp);
+
 app.get("/", (req: Request, res: Response) => {
   return res.status(200).json({ success: true, greeting: "Hello / from API" });
 });
@@ -71,6 +80,7 @@ app.use("/api/v1/chat", chatApis);
  ** Socket client initializer
  */
 initializeSocketIO(ioClient);
+// initializeFirebaseApp()
 /*
  ** Middleware to return response of URL NOT FOUND
  */
